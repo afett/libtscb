@@ -6,6 +6,8 @@
  * Refer to the file "COPYING" for details.
  */
 
+#include <iostream>
+
 #define private public
 #define protected public
 
@@ -163,9 +165,52 @@ void test_pending(void)
 	}
 }
 
+namespace {
+void output_something()
+{
+	std::cerr << "post_class was successful\n";
+}
+
+class post_class {
+public:
+	typedef std::shared_ptr<post_class> pointer;
+
+	~post_class()
+	{
+		reactor_.post(output_something);
+	}
+
+	static pointer create(tscb::posix_reactor_service &reactor)
+	{
+		return pointer(new post_class(reactor));
+	}
+private:
+	post_class(tscb::posix_reactor_service &reactor)
+		: reactor_(reactor)
+	{
+	}
+
+	tscb::posix_reactor_service &reactor_;
+};
+
+void some_dummy_function(post_class::pointer const &)
+{
+}
+
+}
+
+void test_post_during_dispatch(void)
+{
+	tscb::posix_reactor reactor;
+
+	reactor.post(std::bind(some_dummy_function, post_class::create(reactor)));
+	reactor.dispatch_pending_all();
+}
+
 int main()
 {
 	test_basic_operation();
 	test_workqueue_monopolization();
 	test_pending();
+	test_post_during_dispatch();
 }

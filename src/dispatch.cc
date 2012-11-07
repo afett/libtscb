@@ -125,6 +125,7 @@ namespace tscb {
 			if (!workqueue_.empty()) {
 				trigger_.set();
 			}
+			guard.unlock();
 		}
 		async_workqueue_.dispatch();
 		tscb::dispatch(&timer_dispatcher_, io_);
@@ -149,6 +150,7 @@ namespace tscb {
 			if (!workqueue_.empty()) {
 				trigger_.set();
 			}
+			guard.unlock();
 		}
 		
 		if (async_workqueue_.dispatch()) {
