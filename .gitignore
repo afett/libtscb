@@ -12,3 +12,4 @@ config.status
 configure
 doc
 libtscb.pc
+aclocal.m4
