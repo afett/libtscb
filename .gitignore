@@ -4,6 +4,7 @@
 *.a
 *.so
 include/tscb/config
+include/tscb/config.in
 Makefile
 autom4te.cache
 config.log
