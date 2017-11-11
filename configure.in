@@ -28,12 +28,9 @@ fi
 # Checks for libraries.
 ACX_PTHREAD
 
-AC_CHECK_LIB(aio, io_setup)
-AC_CHECK_LIB(rt, aio_suspend)
-
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([sys/poll.h sys/event.h sys/epoll.h libaio.h])
+AC_CHECK_HEADERS([sys/poll.h sys/event.h sys/epoll.h])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([gettimeofday])
@@ -69,11 +66,6 @@ AC_DEFINE(HAVE_KQUEUE,1,[Check if kqueue is defined])
 DISPATCHER_KQUEUE=yes
 ],[])
 
-dnl AC_CHECK_FUNC(io_setup,[
-dnl AC_DEFINE(HAVE_AIO_LINUX,1,[])
-dnl AIO_LINUX=yes
-dnl ],[])
-
 # Optional features
 AC_ARG_WITH(fdsetsize,[  --with-fdsetsize=arg    Override FD_SETSIZE (for the nutters who are running Mac OS <10.3)],[
 SELECT_FD_SETSIZE=$withval
@@ -88,7 +80,6 @@ AC_SUBST(DISPATCHER_SELECT)
 AC_SUBST(DISPATCHER_EPOLL)
 AC_SUBST(DISPATCHER_KQUEUE)
 AC_SUBST(SELECT_FD_SETSIZE)
-AC_SUBST(AIO_LINUX)
 AC_SUBST(VERSION)
 AC_SUBST(ENABLE_SHARED)
 
