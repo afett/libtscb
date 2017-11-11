@@ -8,8 +8,11 @@
 
 #include <tscb/timer>
 
-#include <sys/time.h>
-#include <time.h>
-
 namespace tscb {
+
+std::chrono::steady_clock::time_point monotonic_time(void) noexcept
+{
+	return std::chrono::steady_clock::now();
+}
+
 }
