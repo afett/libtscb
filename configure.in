@@ -42,32 +42,32 @@ AC_CHECK_FUNCS([gettimeofday])
 AC_SEARCH_LIBS([clock_gettime],[rt posix4])
 
 AC_CHECK_FUNC(poll,[
-AC_DEFINE(HAVE_POLL,1,[])
+AC_DEFINE(HAVE_POLL,1,[Check if poll is defined])
 DISPATCHER_POLL=yes
 ],[])
 
 AC_CHECK_FUNC(select,[
-AC_DEFINE(HAVE_SELECT,1,[])
+AC_DEFINE(HAVE_SELECT,1,[Check if select is defined])
 DISPATCHER_SELECT=yes
 ],[])
 
 AC_CHECK_FUNC(epoll_create,[
-AC_DEFINE(HAVE_EPOLL,1,[])
+AC_DEFINE(HAVE_EPOLL,1,[Check if epoll_create is defined])
 DISPATCHER_EPOLL=yes
 ],[])
 
 AC_CHECK_FUNC(epoll_create1,[
-AC_DEFINE(HAVE_EPOLL1,1,[])
+AC_DEFINE(HAVE_EPOLL1,1,[Check if epoll_create1 is defined])
 DISPATCHER_EPOLL=yes
 ],[])
 
 AC_CHECK_FUNC(pipe2,[
-AC_DEFINE(HAVE_PIPE2,1,[])
+AC_DEFINE(HAVE_PIPE2,1,[Check if pipe2 is defined])
 DISPATCHER_EPOLL=yes
 ],[])
 
 AC_CHECK_FUNC(kqueue,[
-AC_DEFINE(HAVE_KQUEUE,1,[])
+AC_DEFINE(HAVE_KQUEUE,1,[Check if kqueue is defined])
 DISPATCHER_KQUEUE=yes
 ],[])
 
