@@ -4,7 +4,7 @@ PACKAGE=libtscb
 AC_INIT(src, 0.9.9, hcb@chaoticmind.net)
 AC_CONFIG_SRCDIR(.)
 
-VERSION=0.9.8
+VERSION=0.9.9
 
 AC_CANONICAL_HOST
 case "$host_os" in 
