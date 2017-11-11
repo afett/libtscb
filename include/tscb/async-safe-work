@@ -184,6 +184,8 @@ namespace tscb {
 		}
 		
 	private:
+		friend class connection;
+
 		async_safe_callback * callback_;
 	};
 	

@@ -6,9 +6,6 @@
  * Refer to the file "COPYING" for details.
  */
 
-#define private public
-#define protected public
-
 #include <tscb/signal>
 #include <tscb/ioready>
 #include <tscb/timer>

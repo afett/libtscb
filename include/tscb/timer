@@ -430,6 +430,8 @@ namespace tscb {
 		}
 		
 	private:
+		friend class connection;
+
 		callback_type * callback_;
 	};
 	
