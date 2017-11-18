@@ -62,8 +62,6 @@ ifeq ($(PORTNAME), linux)
   CPPFLAGS += -D_GNU_SOURCE -D_PTHREAD # make STL thread-safe
 endif
 
-CXXFLAGS+=-Iinclude
-
 LIBTSCB_SOURCES=src/signal.cc src/eventflag.cc src/timer.cc\
 	src/ioready.cc src/file-descriptor-table.cc src/deferred.cc src/dispatch.cc\
 	src/workqueue.cc src/async-safe-work.cc src/childproc-monitor.cc src/reactor.cc
