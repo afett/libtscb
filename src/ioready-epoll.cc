@@ -262,7 +262,7 @@ namespace tscb {
 			}
 		}
 		
-		link->service_.store(this, std::memory_order_relaxed);
+		link->service_.store(this, std::memory_order_release);
 	}
 	
 	void ioready_dispatcher_epoll::unregister_ioready_callback(ioready_callback *link)
@@ -270,7 +270,7 @@ namespace tscb {
 	{
 		async_write_guard<ioready_dispatcher_epoll> guard(*this);
 		
-		if (link->service_.load(std::memory_order_relaxed)) {
+		if (link->service_.load(std::memory_order_acquire)) {
 			int fd = link->fd_;
 			ioready_events old_mask, new_mask;
 			fdtab_.remove(link, old_mask, new_mask);
@@ -290,7 +290,7 @@ namespace tscb {
 				::epoll_ctl(epoll_fd_, op, fd, &event);
 			}
 			
-			link->service_.store(nullptr, std::memory_order_relaxed);
+			link->service_.store(nullptr, std::memory_order_release);
 		}
 		
 		link->cancellation_mutex_.unlock();
