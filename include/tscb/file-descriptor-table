@@ -136,7 +136,7 @@ namespace tscb {
 			inline void clear_entries(void) noexcept
 			{
 				for (size_t n = 0; n < capacity_; ++n) {
-					delete entries_[n];
+					delete entries_[n].load();
 				}
 			}
 			
