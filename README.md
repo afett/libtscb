@@ -3,3 +3,17 @@ Thread Save Callback Library by Helge Bahmann
 
 * branch master is a mirror of http://git.chaoticmind.net/cgi-bin/cgit.cgi/libtscb/
 * branch afe-maintenance is only on https://github.com/afett/libtscb
+
+## Building
+
+    $ autoreconf --install
+    $ ./configure
+    $ make
+    $ make install
+
+Use the `--enable-shared` to build a shared lib.
+
+## Portability
+
+While the original project supports a range of platforms the maintenance
+branch is only tested on recent Linux systems on x86_64.
