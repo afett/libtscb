@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+#include <memory>
 
 #define private public
 #define protected public
