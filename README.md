@@ -11,7 +11,7 @@ Thread Save Callback Library by Helge Bahmann
     $ make
     $ make install
 
-Use the `--enable-shared` to build a shared lib.
+Use the `--enable-shared` switch of the `configure` script to build a shared lib.
 
 ## Portability
 
