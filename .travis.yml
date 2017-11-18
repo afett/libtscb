@@ -1,0 +1,20 @@
+language: cpp
+
+compiler:
+  - clang
+  - gcc
+
+dist: trusty
+sudo: false
+
+branches:
+  only:
+    - afe-maintenance
+
+install: true
+
+before_script:
+    - autoreconf --install
+
+script:
+    - ./configure && make && make check
