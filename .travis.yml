@@ -7,6 +7,13 @@ compiler:
 dist: trusty
 sudo: false
 
+addons:
+  apt:
+    packages:
+      - autoconf
+      - autoconf-archive
+      - automake
+
 branches:
   only:
     - afe-maintenance
