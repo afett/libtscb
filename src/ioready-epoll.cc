@@ -14,6 +14,8 @@
 #include <sys/epoll.h>
 
 #include <tscb/config>
+#include <cassert>
+
 namespace tscb {
 	
 	inline ioready_events ioready_dispatcher_epoll::translate_os_to_tscb(int ev) noexcept
@@ -254,11 +256,16 @@ namespace tscb {
 			event.events = translate_tscb_to_os(new_mask);
 			event.data.u64 = 0;
 			event.data.fd = link->fd_;
-			
+
+			int op;
 			if (old_mask) {
-				::epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, link->fd_, &event);
+				op = EPOLL_CTL_MOD;
 			} else {
-				::epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, link->fd_, &event);
+				op = EPOLL_CTL_ADD;
+			}
+
+			if (::epoll_ctl(epoll_fd_, op, link->fd_, &event) != 0) {
+				assert(false && "epoll_ctrl() failed");
 			}
 		}
 		
@@ -287,7 +294,9 @@ namespace tscb {
 					event.events = translate_tscb_to_os(old_mask);
 					op = EPOLL_CTL_DEL;
 				}
-				::epoll_ctl(epoll_fd_, op, fd, &event);
+				if (::epoll_ctl(epoll_fd_, op, fd, &event) != 0) {
+					assert(false && "epoll_ctrl() failed");
+				}
 			}
 			
 			link->service_.store(nullptr, std::memory_order_release);
@@ -323,7 +332,9 @@ namespace tscb {
 				event.events = translate_tscb_to_os(new_mask);
 				op = EPOLL_CTL_ADD;
 			}
-			::epoll_ctl(epoll_fd_, op, link->fd_, &event);
+			if (::epoll_ctl(epoll_fd_, op, link->fd_, &event) != 0) {
+				assert(false && "epoll_ctrl() failed");
+			}
 		}
 	}
 	

@@ -28,6 +28,9 @@ fi
 # Checks for libraries.
 ACX_PTHREAD
 
+# allow to disable asserts
+AC_HEADER_ASSERT
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([sys/poll.h sys/event.h sys/epoll.h])
