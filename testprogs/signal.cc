@@ -174,8 +174,5 @@ void callback_tests(void)
 int main(void)
 {
 	callback_tests();
-	#if 0
-	callback_reftests();
-	#endif
 	return 0;
 }
