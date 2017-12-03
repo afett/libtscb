@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_flag, sizeof(reuse_flag));
 	listen(sock, 25);
 
-	tscb::ioready_dispatcher * dispatcher=tscb::create_ioready_dispatcher();
+	tscb::ioready_dispatcher * dispatcher=tscb::ioready_dispatcher::create();
 
 	new acceptor(dispatcher, sock);
 

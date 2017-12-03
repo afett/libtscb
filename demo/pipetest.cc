@@ -163,7 +163,7 @@ void cleanup_receivers(void)
 tscb::ioready_dispatcher *prepare_ring(int start, int nelements,
 	perfcounter &counter, int ninject=1)
 {
-	tscb::ioready_dispatcher *d=tscb::create_ioready_dispatcher();
+	tscb::ioready_dispatcher *d=tscb::ioready_dispatcher::create();
 
 	for(int n = 0; n < nelements; ++n)
 		receivers.push_back(

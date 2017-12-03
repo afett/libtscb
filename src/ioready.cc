@@ -9,6 +9,7 @@
 #include <string.h>
 #include <tscb/config>
 #include <tscb/ioready>
+#include <tscb/ioready-epoll>
 
 namespace tscb {
 
@@ -53,55 +54,10 @@ namespace tscb {
 	{
 	}
 
-	static ioready_dispatcher *
-	create_ioready_dispatcher_probe(void);
-
-	#ifdef HAVE_EPOLL
-	ioready_dispatcher *
-	create_ioready_dispatcher_epoll(void);
-	#endif
-
-	typedef ioready_dispatcher *(*ioready_dispatcher_creator_func_t)(void);
-
-	static ioready_dispatcher_creator_func_t ioready_dispatcher_creator_func
-		=&create_ioready_dispatcher_probe;
-
-	static ioready_dispatcher_creator_func_t probe_functions[]={
-	#ifdef HAVE_EPOLL
-		&create_ioready_dispatcher_epoll,
-	#endif
-		0
-	};
-
-	ioready_dispatcher *
-	create_ioready_dispatcher_probe(void)
-	{
-		size_t n=0;
-		while(true) {
-			ioready_dispatcher_creator_func_t func=probe_functions[n];
-			ioready_dispatcher *dispatcher;
-			try {
-				dispatcher=(*func)();
-			}
-			catch(std::runtime_error const&) {
-				n++;
-				continue;
-			}
-			ioready_dispatcher_creator_func=func;
-			return dispatcher;
-		}
-	}
-
-	ioready_dispatcher *
-	create_ioready_dispatcher(void) /* throw(std::bad_alloc, std::runtime_error) */
-	{
-		return (*ioready_dispatcher_creator_func)();
-	}
-
 	ioready_dispatcher *
 	ioready_dispatcher::create(void) /* throw(std::bad_alloc, std::runtime_error) */
 	{
-		return create_ioready_dispatcher();
+		return create_ioready_dispatcher_epoll();
 	}
 
 }

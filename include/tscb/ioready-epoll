@@ -77,6 +77,8 @@ namespace tscb {
 		friend class async_write_guard<ioready_dispatcher_epoll>;
 	};
 
+	ioready_dispatcher *
+	create_ioready_dispatcher_epoll(void);
 }
 
 #endif

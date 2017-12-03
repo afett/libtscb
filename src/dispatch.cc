@@ -44,7 +44,7 @@ namespace tscb {
 	}
 
 	posix_reactor::posix_reactor(void)
-		: io_(create_ioready_dispatcher()),
+		: io_(ioready_dispatcher::create()),
 		trigger_(io_->get_eventtrigger()),
 		timer_dispatcher_(trigger_),
 		async_workqueue_(trigger_)
