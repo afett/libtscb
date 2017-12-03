@@ -40,7 +40,6 @@ AC_CHECK_FUNCS([gettimeofday])
 
 AC_CHECK_FUNC(poll,[
 AC_DEFINE(HAVE_POLL,1,[Check if poll is defined])
-DISPATCHER_POLL=yes
 ],[])
 
 AC_CHECK_FUNC(epoll_create,[
@@ -67,7 +66,6 @@ AC_ARG_ENABLE(shared,[  --enable-shared        Build shared library version of l
 ENABLE_SHARED=yes
 ],[])
 
-AC_SUBST(DISPATCHER_POLL)
 AC_SUBST(DISPATCHER_EPOLL)
 AC_SUBST(SELECT_FD_SETSIZE)
 AC_SUBST(VERSION)

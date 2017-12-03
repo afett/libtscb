@@ -31,7 +31,6 @@ LDFLAGS = @LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS = @LIBS@ @PTHREAD_LIBS@
 INSTALL = @INSTALL@
 PORTNAME = @PORTNAME@
-DISPATCHER_POLL = @DISPATCHER_POLL@
 DISPATCHER_EPOLL = @DISPATCHER_EPOLL@
 SELECT_FD_SETSIZE = @SELECT_FD_SETSIZE@
 ENABLE_SHARED = @ENABLE_SHARED@
@@ -65,10 +64,6 @@ LIBTSCB_SOURCES=src/signal.cc src/eventflag.cc src/timer.cc\
 	src/workqueue.cc src/async-safe-work.cc src/childproc-monitor.cc src/reactor.cc
 
 # include dispatcher implementations depending on configuration
-
-ifeq ($(DISPATCHER_POLL), yes)
-  LIBTSCB_SOURCES+=src/ioready-poll.cc
-endif
 
 ifeq ($(DISPATCHER_EPOLL), yes)
   LIBTSCB_SOURCES+=src/ioready-epoll.cc

@@ -60,10 +60,6 @@ namespace tscb {
 	ioready_dispatcher *
 	create_ioready_dispatcher_epoll(void);
 	#endif
-	#ifdef HAVE_POLL
-	ioready_dispatcher *
-	create_ioready_dispatcher_poll(void);
-	#endif
 
 	typedef ioready_dispatcher *(*ioready_dispatcher_creator_func_t)(void);
 
@@ -73,9 +69,6 @@ namespace tscb {
 	static ioready_dispatcher_creator_func_t probe_functions[]={
 	#ifdef HAVE_EPOLL
 		&create_ioready_dispatcher_epoll,
-	#endif
-	#ifdef HAVE_POLL
-		&create_ioready_dispatcher_poll,
 	#endif
 		0
 	};

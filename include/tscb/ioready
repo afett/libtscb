@@ -189,11 +189,6 @@
 
 	<UL>
 		<LI>
-			Using the <TT>poll</TT> system call:
-			\ref tscb::ioready_dispatcher_poll "ioready_dispatcher_poll"
-			(available most Posix systems)
-		</LI>
-		<LI>
 			Using the <TT>epoll</TT> family of system calls:
 			\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"
 			(available on Linux systems)

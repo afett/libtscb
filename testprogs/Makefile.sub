@@ -15,15 +15,9 @@ TESTS = \
 	async-work \
 	childproc \
 
-ifeq ($(DISPATCHER_POLL), yes)
-  TESTS+=ioready-poll
-endif
-
 ifeq ($(DISPATCHER_EPOLL), yes)
   TESTS+=ioready-epoll
 endif
-
-testprogs/ioready-poll: testprogs/ioready-poll.o testprogs/ioready-dispatcher.o
 
 testprogs/ioready-epoll: testprogs/ioready-epoll.o testprogs/ioready-dispatcher.o
 

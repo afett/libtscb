@@ -3,7 +3,6 @@ signal
 deferred
 eventflag
 ioready-epoll
-ioready-poll
 list
 timer
 fibheap
