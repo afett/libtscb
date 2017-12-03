@@ -13,25 +13,25 @@
 
 /**
 	\page timer_descr Timer callbacks
-	
+
 	The template class \ref tscb::generic_timer_service "generic_timer_service"
 	defines the interface which receivers of timer callbacks can use to register
 	themselves. The single template parameter determines the data type used to
 	represent time values.
-	
+
 	A specialization of this template, \ref tscb::timer_service "timer_service",
 	uses std::chrono::steady_clock::time_point to represent time values, and is thus suitable
 	to cooperate with boost::posix_time::microsec_clock and
 	\ref tscb::ioready_dispatcher "ioready_dispatcher" to dispatch wall clock
 	timer events.
-	
+
 	\section timer_registration "Registration for events"
-	
+
 	Interested receivers can register functions to be called at specified points
 	in time at the \ref tscb::generic_timer_service "generic_timer_service" interface. Receivers
 	can use the \ref tscb::generic_timer_service::timer "generic_timer_service::timer" functions
 	for this purpose; they can be used in the following fashion:
-	
+
 	\code
 		class TimerHandler {
 		public:
@@ -53,66 +53,66 @@
 			}
 		}
 	\endcode
-	
+
 	In the previous example, the <TT>onTimer</TT> method of the corresponding object
 	will be called at the specified point in time; moreover the timer will
 	rearm itself 1000 "units" in the future by returning <TT>true</TT>, effectively
 	creating an (imprecise) periodic timer (see section \ref periodic_timers below
 	how to create precise periodic timers). Returning <TT>false</TT> from the
 	timer callback functions indicates that it does not want to be called again.
-	
+
 	The callback function is passed the current time (as it is known to the
 	callback service provider) as first argument. It is very likely that this
-	is slightly <I>after</I> the desired point in time (due to notification and 
+	is slightly <I>after</I> the desired point in time (due to notification and
 	scheduling latency); the implementation can find out by what amount of time
 	the callback is to late by inspecting this value and comparing with the
 	desired point in time.
-	
-	
+
+
 	\section timer_callback_cookies Callback link handles for timer callbacks
-	
+
 	The \ref tscb::generic_timer_service::timer "generic_timer_service::timer" functions returns a
 	reference to a callback link object that represents the connection between the
 	callback service provider and the receiver. The return value
 	can be stored by the caller:
-	
+
 	\code
 		tscb::timer_callback link;
 		link=service->timer<TimerHandler, &TimerHandler::onTimer, &IOHandler::finish>
 			(tscb::current_time()+1000, this);
 	\endcode
-	
+
 	The link object can later be used to cancel the timer:
-	
+
 	\code
 		link->disconect();
 	\endcode
-	
+
 	Afterwards, the timer function will not be called again. If the timer
 	callback function is running concurrently in another thread and it
 	returns <TT>True</TT> (indicating that it would like to rearm itself)
 	it is cancelled <I>nevertheless</I>. Calling <TT>disconnect</TT> always
 	takes precedence.
-	
+
 	\section periodic_timers Precise periodic timers
-	
+
 	Since timer callback functions may be called with a slight "lag", it is not
 	possible to implement precise periodic timers by simply incrementing the
 	current time with a fixed value to calculate the next callback time.
 	Instead the receiver has to keep track of the "originally desired" point
 	in time and used that as a base instead:
-	
+
 	\code
 		class TimerHandler {
 		public:
 			long long next_callback_due;
-			
+
 			bool onTimer(long long time) noexcept
 			{
 				// calculate amount of time we are late
 				long long lag=time-next_callback_due;
 				// perform timer action
-				
+
 				next_callback_due+=1000;
 				time=next_callback_due;
 				return true; // rearm timer 1000 usecs in the future
@@ -124,29 +124,29 @@
 			void register(tscb::timer_service *service) throw(std::bad_alloc)
 			{
 				next_callback_due=current_time()+1000;
-				
+
 				// call us 1000 usecs in the future
 				service->timer<TimerHandler, &TimerHandler::onTimer, &TimerHandler::finish>
 					(tscb::next_callback_due, this);
 			}
 		}
 	\endcode
-	
+
 	Programmers are encouraged to use this feature to provide if they want to
 	be called again (either periodically, or with varying timeouts);
 	it is more efficient to rearm an existing timer with a new timeout value
 	than to unregister an expired timer and create a new one.
-	
+
 	\section timerqueue_dispatcher_descr Timer dispatchers
-	
+
 	Free-standing implementations of the \ref tscb::timer_service "timer_service"
 	interface suitable for timer event dispatching are provided by the
-	\ref tscb::generic_timerqueue_dispatcher "generic_timerqueue_dispatcher" 
+	\ref tscb::generic_timerqueue_dispatcher "generic_timerqueue_dispatcher"
 	class template (and its specialization,
 	\ref tscb::timerqueue_dispatcher "timerqueue_dispatcher", respectively).
 	The implementations use a fibonacci heap (see \ref fibheap_descr) to
 	store pending timers.
-	
+
 	The \ref tscb::generic_timerqueue_dispatcher "generic_timerqueue_dispatcher"
 	provides the \ref tscb::generic_timerqueue_dispatcher::run_queue "run_queue"
 	member function; it expects the current time value to be given and
@@ -154,11 +154,11 @@
 	If timers are added/modified during this queue run so that their
 	expiry time is equal to, or before the current time, they will
 	be processed as well.
-	
+
 	The function returns true if there are timers pending after processing
 	the queue, and will indicate the point in time when the next callback
 	is due. It should be called in the following fashion:
-	
+
 	\code
 		tscb::timerqueue_dispatcher *dispatcher;
 		...
@@ -175,28 +175,28 @@
 			now=tscb::current_time();
 			// compare with next pending timer and run again, if required
 		} while(now>=next_timer);
-		
+
 		// wait appropriate amount of time, until next timer is due
 		if (timer_pending)
 			sleep_milliseconds(next_timer-now);
 	\endcode
-	
+
 	As shown above, the current time should be rechecked after processing the
 	timer queue because processing the timer callbacks takes its time as well.
-	
+
 	The returned time value can be used to calculate the time to "sleep"
 	until the next timer is due. Since timers can be added during the
 	"sleep" period, the dispatcher cooperates with an
 	\ref tscb::eventflag "eventflag" to interrupt the sleep if a timer
 	has been added that would expire within the sleep period:
-	
+
 	\code
 		tscb::eventflag *flag;
 		tscb::timerqueue_dispatcher *dispatcher;
 		...
 		dispatcher=new tscb::timerqueue_dispatcher(flag);
 	\endcode
-	
+
 	The caller must <I>atomically</I> wait on the eventflag and the
 	timeout value calculated above. One way to achieve this is to
 	couple the timer dispatching with an
@@ -223,14 +223,14 @@ namespace tscb {
 
 	template<typename Timeval> class generic_timer_service;
 	template<typename Timeval> class abstract_timer_callback;
-	
+
 	/**
 		\brief callback link for timer events
-		
+
 		This class represents a link that has been established for timer
 		callback functions (see \ref tscb::timer_service). Like its base
 		class, \ref tscb::abstract_callback, it supports cancellation.
-		
+
 		Since timer callbacks are bound to a specific point in time, the
 		callback function has to provide a new timeout value and request
 		to be called again, otherwise the callback will be unregistered
@@ -246,7 +246,7 @@ namespace tscb {
 		{}
 		virtual ~abstract_timer_callback(void) noexcept
 		{}
-		
+
 		virtual void disconnect(void) noexcept
 		{
 			cancellation_mutex_.lock();
@@ -257,21 +257,21 @@ namespace tscb {
 				cancellation_mutex_.unlock();
 			}
 		}
-		
+
 		virtual bool connected(void) const noexcept
 		{
 			return service_.load(std::memory_order_relaxed) != nullptr;
 		}
-		
+
 		/** \internal \brief Destroy function object after completing cancellation */
 		inline void cancelled(void) noexcept
 		{
 			target_ = nullptr;
 		}
-		
+
 		/** \brief return expiry time */
 		inline Timeval expires(void) const noexcept {return when_;}
-		
+
 		/** \internal \brief compare timeout values */
 		inline bool operator>(const abstract_timer_callback &x) const {return when_ > x.when_;}
 		/** \internal \brief compare timeout values */
@@ -284,22 +284,22 @@ namespace tscb {
 			when_ = newval;
 			return *this;
 		}
-		
+
 		/* the following class members should not be touched
 		except by timer_service implementations */
-		
+
 		/** \internal \brief function to be called when timer expires */
 		std::function<bool (Timeval &time)> target_;
-		
+
 		/** \internal \brief when is the timer about to expire? */
 		Timeval when_;
-		
+
 		/** \internal \brief protect against concurrent cancellation from multiple sides */
 		std::mutex cancellation_mutex_;
-		
+
 		/** \internal \brief Timer service provider we are registered with */
 		std::atomic<generic_timer_service<Timeval> *> service_;
-		
+
 		/** \internal \brief Fields required for fibonacci heap structure */
 		abstract_timer_callback *next_;
 		/** \internal \brief Fields required for fibonacci heap structure */
@@ -310,36 +310,36 @@ namespace tscb {
 		abstract_timer_callback *child_;
 		/** \internal \brief Fields required for fibonacci heap structure */
 		int degree_;
-		
+
 		/*
 			locking rules:
-			
+
 			the member variables belonging to the timer queue implementation
 			(prev, next, parent, child, degree) are only modified under
 			service->queue_mutex
-			
+
 			the member variable "service" is only modified if BOTH
 			this->cancellation_mutex and this->service->queue_mutex are
 			held (exception: see destructor of timerqueue_dispatcher)
 		*/
-		
+
 		/*
 			reference counting rules:
-			
+
 			two types of entities can hold references to the link object:
 			1. the timer dispatching service (aka timer queue)
 			2. the creator of the callback link (who may wish to cancel the
 			   link)
-			
-			
+
+
 		*/
 	};
-	
+
 	template<typename Timeval>
 	class abstract_timer_connection {
 	public:
 		typedef abstract_timer_callback<Timeval> callback_type;
-		
+
 		inline abstract_timer_connection(callback_type * callback=nullptr, bool add_ref=true) noexcept
 			: callback_(callback)
 		{
@@ -347,14 +347,14 @@ namespace tscb {
 				callback->pin();
 			}
 		}
-		
+
 		inline ~abstract_timer_connection(void) noexcept
 		{
 			if (callback_) {
 				callback_->release();
 			}
 		}
-		
+
 		inline abstract_timer_connection(const abstract_timer_connection & other) noexcept
 			: callback_(other.callback_)
 		{
@@ -362,7 +362,7 @@ namespace tscb {
 				callback_->pin();
 			}
 		}
-		
+
 		inline const abstract_timer_connection &operator=(const abstract_timer_connection & other) noexcept
 		{
 			if (callback_) {
@@ -374,7 +374,7 @@ namespace tscb {
 			}
 			return *this;
 		}
-		
+
 		inline const abstract_timer_connection &operator=(const callback_type * callback) noexcept
 		{
 			if (callback_) {
@@ -386,7 +386,7 @@ namespace tscb {
 			}
 			return *this;
 		}
-		
+
 		inline void disconnect(void) noexcept
 		{
 			if (callback_) {
@@ -395,24 +395,24 @@ namespace tscb {
 				callback_ = nullptr;
 			}
 		}
-		
+
 		inline bool connected(void) const noexcept
 		{
 			return callback_ && callback_->connected();
 		}
-		
+
 		inline operator connection (void) const noexcept
 		{
 			return callback_;
 		}
-		
+
 		template<typename ConnectionType>
 		inline abstract_timer_connection(ConnectionType && other) noexcept
 			: callback_(other.callback_)
 		{
 			other.callback_ = nullptr;
 		}
-		
+
 		template<typename ConnectionType>
 		inline const abstract_timer_connection<Timeval> &operator=(ConnectionType && other) noexcept
 		{
@@ -423,25 +423,25 @@ namespace tscb {
 			other.callback_ = nullptr;
 			return *this;
 		}
-		
+
 		inline callback_type * get(void) const noexcept
 		{
 			return callback_;
 		}
-		
+
 	private:
 		friend class connection;
 
 		callback_type * callback_;
 	};
-	
+
 	/**
 		\brief Scoped connection between signal and receiver
-		
+
 		Variant of \ref abstract_timerconnection object that
 		automatically breaks the connection when this object goes
 		out of scope.
-		
+
 		\warning This class can be used by an object to track
 		signal connections to itself, and have all connections
 		broken automatically when the object is destroyed.
@@ -454,19 +454,19 @@ namespace tscb {
 	public:
 		inline scoped_abstract_timer_connection(void) noexcept {}
 		inline ~scoped_abstract_timer_connection(void) noexcept {disconnect();}
-		
+
 		inline bool connected(void) const noexcept {return conn.connected();}
-		
+
 		inline void disconnect(void) noexcept {conn.disconnect();}
-		
+
 		inline scoped_abstract_timer_connection(const abstract_timer_connection<Timeval> & _conn) noexcept : conn(_conn) {}
-		
+
 		inline scoped_abstract_timer_connection & operator=(const abstract_timer_connection<Timeval> & _connection) noexcept
 		{disconnect(); conn = _connection; return *this;}
-		
+
 		inline scoped_abstract_timer_connection(abstract_timer_callback<Timeval> * callback) noexcept
 		{disconnect(); conn = callback;}
-		
+
 		inline scoped_abstract_timer_connection & operator=(abstract_timer_callback<Timeval> * callback) noexcept
 		{disconnect(); conn = callback; return *this;}
 	protected:
@@ -480,16 +480,16 @@ namespace tscb {
 	template<typename Timeval>
 	void intrusive_ptr_release(abstract_timer_callback<Timeval> *t) {t->release();}
 	/** \endcond */
-	
+
 	/**
 		\brief Registration for timer events
-		
+
 		This class provides the registration interface for timer callbacks.
 		Receivers can use the \ref timer methods of
 		this class to indicate their interest in receiving callbacks
 		at defined points in time. See section \ref timer_registration
 		for examples on how to use this interface.
-		
+
 		The single template parameter, <TT>Timeval</TT>, of this class determines
 		the data type used to represent points in time. The most
 		useful specialization is given by \ref tscb::timer_service "timer_service"
@@ -502,30 +502,30 @@ namespace tscb {
 	public:
 		virtual ~generic_timer_service(void) noexcept
 		{}
-		
+
 		/**
 			\brief register callback for timer event
-			
+
 			\param function
 				Function to be called at specific point in time
 			\param expires
 				The point in time when the callback should be executed
-			
+
 			This function requests a callback at a given point in time. The
 			point in time is given as an absolute value, so if you want a
 			relative point in time, use \ref tscb::current_time and add an
 			appropriate time interval.
-			
+
 			No hard real-time guarantees are made about when the callback
 			will be executed. It will usually be executed a little after the
 			point in time indicated by <CODE>expires</CODE>, dependent on
 			the resolution of the system clock (about 1 millisecond for
 			most systems) and load of the system.
-			
+
 			For this reason the function is called with the current time (as
 			known to the caller), so the callback can determine how much it is
 			too late and act accordingly.
-			
+
 			The called function may either return <CODE>false</CODE>, in
 			which case the timer is considered "cancelled" and will not
 			be called again; or it may modify the value passed in
@@ -540,22 +540,22 @@ namespace tscb {
 			register_timer(link);
 			return abstract_timer_connection<Timeval>(link);
 		}
-		
+
 		/** \internal \brief Register timer with internal data structure */
 		virtual void register_timer(abstract_timer_callback<Timeval> * ptr) noexcept=0;
 		/** \internal \brief Unregister timer with internal data structure */
 		virtual void unregister_timer(abstract_timer_callback<Timeval> * t) noexcept=0;
 	};
-	
+
 	/**
 		\brief Timer queue dispatcher
-		
+
 		This implementation of the \ref tscb::timer_service "timer_service"
 		interface stores pending timers in a fibonacci heap and takes
 		care of dispatching callbacks at appropriate points in time.
 		To accomplish its task it requires \ref run_queue to be called
 		periodically.
-		
+
 		See section \ref timerqueue_dispatcher_descr for examples how
 		this class can be used.
 	*/
@@ -564,11 +564,11 @@ namespace tscb {
 	public:
 		/**
 			\brief Create timer dispatcher
-			
+
 			\param flag
 				Event flag that will be signalled when time to the
 				next pending timer has been changed
-			
+
 			Instantiates a timer dispatcher. It supports dispatching of
 			registered timers as well as calculating the "deadline" when
 			the next pending timer needs to be dispatched
@@ -581,21 +581,21 @@ namespace tscb {
 			: timer_queue_running(false), timer_added(trigger)
 		{
 		}
-		
+
 		virtual ~generic_timerqueue_dispatcher(void) noexcept
 		{
 			std::unique_lock<std::mutex> guard(queue_mutex);
-			
+
 			abstract_timer_callback<Timeval> *link = timer_queue.extract_min();
 			while (link) {
 				/* mark item as "unqueued" */
 				link->next_ = nullptr;
 				guard.unlock();
-				
+
 				/* since the item has been marked "unqueued", concurrent cancel operations
 				will simply do nothing (and, especially, not drop the reference that
 				was held by the queue) */
-				
+
 				link->cancellation_mutex_.lock();
 				/* it is permissible to omit taking queue_mutex around zeroing out "service"
 				because the only place we ever care about "service" being unmodified under
@@ -603,63 +603,63 @@ namespace tscb {
 				never be active at the same time as the destructor of the object */
 				link->service_.store(nullptr, std::memory_order_relaxed);
 				link->cancellation_mutex_.unlock();
-				
+
 				link->cancelled();
 				link->release();
-				
+
 				guard.lock();
 				link = timer_queue.extract_min();
 			}
 		}
-		
+
 		/**
 			\brief Check if any timers are pending
-			
+
 			Returns true if any timers are pending at all (i.e. any
 			timer callbacks have been registered); if the function
 			returns false, there is no point in calling \ref run_queue
 			as no timers have been registered.
-			
+
 			Note that this check may race with registration of
 			new timers from other threads; to avoid missing timers
 			the caller should therefore
-			
+
 			1. clear the \ref eventflag the timer dispatcher is
 			associated with
-			
+
 			2. check if timers are pending
-			
+
 			3. atomically wait for timeout and the \ref eventflag
-			
+
 			If a timer is inserted between 2 and 3, the dispatcher
 			thread will not wait in step 3, and a new
 			iteration of the dispatching loop must be started.
-			
+
 			This function is more light-weight than its
 			cousin \ref next_timer.
 		*/
 		inline bool timers_pending(void) const noexcept
 		{
 			/* FIXME: race semantics are unclear */
-			
+
 			return (bool)timer_queue.peek_min();
 		}
-		
+
 		/**
 			\brief Determine when next timer is due
-			
+
 			\param tv
 				Point in time when the next timer is due
-			
+
 			Returns true if any timers are pending at all (i.e.
 			any timer callbacks have been registered); if
 			any timers are registered, the expiration time of
 			the earliest pending timer is returned as well.
-			
+
 			All remarks regarding race conditions that
 			apply to \ref timers_pending apply to this
 			function as well.
-			
+
 			Note that \ref next_timer delivers more
 			information than \ref timers_pending and is
 			more heavy-weight.
@@ -667,7 +667,7 @@ namespace tscb {
 		inline bool next_timer(Timeval &tv) const noexcept
 		{
 			std::unique_lock<std::mutex> guard(queue_mutex);
-			
+
 			abstract_timer_callback<Timeval> * t = timer_queue.peek_min();
 			if (t) {
 				tv = t->when_;
@@ -675,14 +675,14 @@ namespace tscb {
 			}
 			return false;
 		}
-		
+
 		/**
 			\brief Process timer queue
-			
+
 			\param time
 				On entrance, the current time; on exit, the time when
 				the next pending timer is due
-			
+
 			The calling thread checks all pending timers and processes
 			those that have expired. All timers that have an expiry timestamp
 			in the "past" (with respect to the argument time) are processed
@@ -690,21 +690,21 @@ namespace tscb {
 			respect to the argument time), the timestamp of the earliest
 			timer is returned in place of the argument time and the function
 			returns true.
-			
+
 			If no timers remain, the function returns false.
 		*/
 		bool run_queue(Timeval &time)
 		{
 			std::unique_lock<std::mutex> guard(queue_mutex);
-			
+
 			abstract_timer_callback<Timeval> *t = timer_queue.peek_min();
-			
+
 			if (!t) {
 				return false;
 			}
-			
+
 			timer_queue_running = true;
-			
+
 			while (t) {
 				if (!t) {
 					break;
@@ -712,16 +712,16 @@ namespace tscb {
 				if (t->when_ > time) {
 					break;
 				}
-				
+
 				t = timer_queue.extract_min();
 				/* mark item as "unqueued" */
 				t->next_ = nullptr;
 				guard.unlock();
-				
+
 				Timeval expires = time;
 				/* FIXME: what is supposed to happen if this throws? */
 				bool rearm = t->target_(expires);
-				
+
 				if (!rearm) {
 					t->cancellation_mutex_.lock();
 					/* we can modify t->service here without holding queue_mutex
@@ -732,62 +732,62 @@ namespace tscb {
 					already */
 					t->service_.store(nullptr, std::memory_order_relaxed);
 					t->cancellation_mutex_.unlock();
-					
+
 					t->cancelled();
 					t->release();
 					guard.lock();
 					goto nexttimer;
 				}
-				
+
 				/* the timer function would like to rearm itself, but it
 				is possible that ->cancel() has been called on the timer,
 				so it cannot be rearmed */
-				
+
 				/* fast path check if it has been cancelled; note that
 				this check can certainly race with concurrent calls to
 				->cancel, but if t->service==0 then we can avoid one
 				useless lock/unlock cycle */
-				
+
 				if (__builtin_expect(!t->connected(), false)) {
 					t->cancelled();
 					t->release();
 					guard.lock();
 					goto nexttimer;
 				}
-				
+
 				guard.lock();
 				/* we are now optimistic that the timer can be rearmed;
 				since ->service is only modified under the lock, we
 				can now perform the last check without worrying about
 				possible races */
-				
+
 				if (__builtin_expect(!t->connected(), false)) {
 					/* okay the timer has been cancelled within the
 					race window above; now we have to perform
 					slow path cleanup */
 					guard.unlock();
-					
+
 					/* this could potentially drop the last reference
 					to the link object and result in a cascade of
 					other cleanup operations; for this reason, dropping
 					the reference must not be done under the lock */
 					t->cancelled();
 					t->release();
-					
+
 					guard.lock();
 					goto nexttimer;
 				}
-				
+
 				t->when_ = expires;
 				/* whew, we are certain now that the timer has to be rearmed */
 				timer_queue.insert(t);
-				
+
 			nexttimer:
 				t = timer_queue.peek_min();
 			}
-			
+
 			timer_queue_running = false;
-			
+
 			if (t) {
 				time = t->when_;
 				return true;
@@ -795,17 +795,17 @@ namespace tscb {
 				return false;
 			}
 		}
-		
+
 		/** \internal \brief Register timer with internal data structure */
 		virtual void register_timer(abstract_timer_callback<Timeval> * ptr) noexcept
 		{
 			queue_mutex.lock();
-			
+
 			timer_queue.insert(ptr);
 			bool needWakeup = (timer_queue.peek_min() == ptr) && !timer_queue_running;
 			ptr->service_.store(this, std::memory_order_relaxed);
 			queue_mutex.unlock();
-			
+
 			if (needWakeup) timer_added.set();
 		}
 		/** \internal \brief Unregister timer with internal data structure */
@@ -821,7 +821,7 @@ namespace tscb {
 			t->next_ = nullptr;
 			queue_mutex.unlock();
 			t->cancellation_mutex_.unlock();
-			
+
 			if (needWakeup) {
 				timer_added.set();
 			}
@@ -830,7 +830,7 @@ namespace tscb {
 				t->release();
 			}
 		}
-		
+
 	protected:
 		/** \internal \brief Fibonacci heap of pending timers */
 		fibheap<abstract_timer_callback<Timeval> > timer_queue;
@@ -841,36 +841,36 @@ namespace tscb {
 		/** \internal \brief Event flag signalled when timer has been added */
 		eventtrigger & timer_added;
 	};
-	
+
 	/** \brief Timer callback link using steady clock time points to represent time values */
 	typedef abstract_timer_callback<std::chrono::steady_clock::time_point> timer_callback;
-	
+
 	/** \brief Reference to timer callback link using steady clock time points to represent time values */
 	typedef abstract_timer_connection<std::chrono::steady_clock::time_point> timer_connection;
-	
+
 	/** \brief Scoped reference to timer callback link using steady clock time points to represent time values */
 	typedef scoped_abstract_timer_connection<std::chrono::steady_clock::time_point> scoped_timer_connection;
-	
+
 	/**
 		\typedef tscb::timer_service
 		\brief Timer service using steady clock time points to represent time values
-		
+
 		Typedef for \ref tscb::generic_timer_service "generic_timer_service&lt;std::chrono::steady_clock::time_point&gt;"
 	*/
 	typedef generic_timer_service<std::chrono::steady_clock::time_point> timer_service;
-	
+
 	/**
 		\brief Timer dispatcher using steady clock time points to represent time values
-		
+
 		Typedef for \ref tscb::generic_timerqueue_dispatcher "generic_timerqueue_dispatcher&lt;std::chrono::steady_clock::time_point&gt;"
 	*/
 	typedef generic_timerqueue_dispatcher<std::chrono::steady_clock::time_point> timerqueue_dispatcher;
-	
+
 	/**
 		\brief Return monotonic time
 	*/
 	extern std::chrono::steady_clock::time_point monotonic_time(void) noexcept;
-	
+
 }
 
 #endif

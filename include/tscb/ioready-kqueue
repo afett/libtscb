@@ -20,16 +20,16 @@
 #include <tscb/file-descriptor-table>
 
 namespace tscb {
-	
+
 	/**
 		\brief Dispatcher for IO readiness events using the
 		<TT>kqueue</TT> system call mechanism
-		
+
 		This class supports collecting the IO readiness state of
 		a set of file descriptors using the <TT>kevent</TT> system
 		call, and dispatching callbacks to receivers that have
 		registered themselves for events on specific file descriptors.
-		
+
 		The <TT>kevent</TT> system call provide the fastest
 		possible way to observe the state of a set of file descriptors
 		on BSD-derived systems; additionally other event
@@ -38,7 +38,7 @@ namespace tscb {
 		\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"
 		all relevant operations are O(1), that is: independent from
 		the number of descriptors being watched.
-		
+
 		Moreover, the \ref dispatch method can usefully be called by
 		multiple threads.
 	*/
@@ -46,14 +46,14 @@ namespace tscb {
 	public:
 		ioready_dispatcher_kqueue(void) throw(std::runtime_error);
 		virtual ~ioready_dispatcher_kqueue(void) throw();
-		
+
 		virtual size_t dispatch(const boost::posix_time::time_duration *timeout, int max);
-		
+
 		virtual size_t dispatch_pending(size_t max);
-		
+
 		virtual eventflag *get_eventflag(void)
 			throw(std::runtime_error, std::bad_alloc);
-		
+
 		virtual void register_ioready_callback(ioready_callback *l)
 			throw(std::bad_alloc);
 		virtual void unregister_ioready_callback(ioready_callback *e)
@@ -62,23 +62,23 @@ namespace tscb {
 			throw();
 	protected:
 		void drain_queue(void) throw();
-		
+
 		void update_evmask(int fd) throw();
-		
+
 		void process_events(struct kevent events[], size_t nevents) throw();
-		
+
 		int kqueue_fd;
-		
+
 		void synchronize(void) throw();
-		
+
 		ioready_callback_table callback_tab;
-		
+
 		pipe_eventflag *wakeup_flag;
 		std::mutex singleton_mutex;
-		
+
 		deferrable_rwlock guard;
 	};
-	
+
 }
 
 #endif

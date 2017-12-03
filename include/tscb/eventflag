@@ -15,10 +15,10 @@
 #include <pthread.h>
 
 namespace tscb {
-	
+
 	/**
 		\brief Event trigger interface
-		
+
 		Provides the interface of a simple event trigger. It
 		provides a single operation that triggers some event.
 		All implementations of this interface are async-signal
@@ -28,71 +28,71 @@ namespace tscb {
 	class eventtrigger {
 	public:
 		virtual ~eventtrigger(void) noexcept;
-		
+
 		/**
 			\brief Trigger the event
-			
+
 			Trigger the event.
 		*/
 		virtual void set(void) noexcept=0;
 	};
-	
+
 	/**
 		\brief Event flag interface
-		
+
 		Provides the interface of an event flag synchronization primitive.
 		An event flag can be in one of two possible states: set or cleared.
 		If the flag is set, a \ref wait operation on the flag will
 		not block, and the thread will continue unimpeded. If the
 		flag is cleared, a \ref wait operation will block until
 		the state of the flag is changed to set.
-		
+
 		In contrast to condition variables, threads will not block on an
 		event flag if it has been set previously. Mutexes and
 		event flags can be used as replacements for mutexes and condition
 		variables, however the stateful nature of event flags requires
 		maintaining correct ordering of operations to avoid
 		missed wakeups.
-		
+
 		The important distinguishing property between eventflags and
 		condition is that eventflags can be set from within
 		signal handlers: For all eventflag implementations, the
 		\ref eventflags::set operation is guaranteed to be wait-free
 		and async-signal safe.
-		
+
 		Eventflags are used in <B>tscb</B> to provide a
 		generic interface for thread wakeup.
 	*/
 	class eventflag : public eventtrigger {
 	public:
 		virtual ~eventflag(void) noexcept;
-		
+
 		/**
 			\brief Set the flag
-			
+
 			Set the flag, will implicitly wake up all threads waiting
 			for the flag via \ref eventflag::wait
 		*/
 		virtual void set(void) noexcept=0;
 		/**
 			\brief Clear the flag
-			
+
 			Clear the flag, threads calling \ref eventflag::wait will block until
 			the flag is set again via \ref eventflag::set
 		*/
 		virtual void clear(void) noexcept=0;
 		/**
 			\brief Wait until the flag is set
-			
+
 			Block the current thread until the flag is set; the thread
 			will continue without blocking if the flag is set already.
 		*/
 		virtual void wait(void) noexcept=0;
 	};
-	
+
 	/**
 		\brief Event flag implementation using a control pipe
-		
+
 		This class implements an event flag using two file descriptors
 		to an internal control pipe; threads are woken up by writing
 		to a control pipe, threads wait on the flag by checking
@@ -103,39 +103,39 @@ namespace tscb {
 		/** \brief Instantiate event flag, using a pair of pipes */
 		pipe_eventflag(void) throw(std::runtime_error);
 		virtual ~pipe_eventflag(void) noexcept;
-		
+
 		virtual void set(void) noexcept;
 		virtual void wait(void) noexcept;
 		virtual void clear(void) noexcept;
-		
+
 		/** \internal \brief Mark one thread as waiting */
 		void start_waiting(void) noexcept;
 		/** \internal \brief Remove one waiting thread */
 		void stop_waiting(void) noexcept;
-		
+
 		/** \internal \brief Read side of the pipe pair */
 		int readfd_;
 		/** \internal \brief Write side of the pipe pair */
 		int writefd_;
 		/** \internal
 			\brief State of the event flag
-			
+
 			The event flag implementation uses the following internal states:
 			- 0: not flagged
-			- 1: flagged, but no wakeup via control pipe 
+			- 1: flagged, but no wakeup via control pipe
 			- 2: flagged, wakeup sent via control pipe
 		*/
 		std::atomic_int flagged_;
 		/** \internal \brief Number of threads waiting */
 		std::atomic<size_t> waiting_;
 	};
-	
+
 	/** \cond NEVER -- ignored by doxygen */
 	class platform_eventflag : public eventflag {
 	public:
 		platform_eventflag(void) noexcept;
 		virtual ~platform_eventflag(void) noexcept;
-		
+
 		virtual void set(void) noexcept;
 		virtual void wait(void) noexcept;
 		virtual void clear(void) noexcept;

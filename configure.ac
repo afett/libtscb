@@ -7,7 +7,7 @@ AC_CONFIG_SRCDIR(.)
 VERSION=0.9.9
 
 AC_CANONICAL_HOST
-case "$host_os" in 
+case "$host_os" in
 	darwin*) PORTNAME=darwin ;;
 	linux*) PORTNAME=linux ;;
 	freebsd*) PORTNAME=freebsd ;;

@@ -14,9 +14,9 @@
 #include <tscb/ioready>
 
 namespace tscb {
-	
+
 	/** \cond NEVER -- internal class, ignored by doxygen */
-	
+
 	/**
 		\brief Chain of callbacks associated with a file descriptor
 	*/
@@ -25,13 +25,13 @@ namespace tscb {
 		std::atomic<ioready_callback *> active_;
 		ioready_callback * first_, * last_;
 		std::atomic<uint32_t> cookie_;
-		
+
 		file_descriptor_chain(void)
 			: active_(nullptr), first_(nullptr), last_(nullptr), cookie_(0)
 		{
 		}
 	};
-	
+
 	/**
 		\brief Table mapping file descriptors to callback chains
 	*/
@@ -41,7 +41,7 @@ namespace tscb {
 			: table_(new volatile_table(initial)), inactive_(nullptr), cookie_(0), need_cookie_sync_(false)
 		{
 		}
-		
+
 		inline ~file_descriptor_table(void) noexcept
 		{
 			volatile_table * tab = table_.load(std::memory_order_consume);
@@ -52,41 +52,41 @@ namespace tscb {
 				tab = tmp;
 			}
 		}
-		
+
 		/* must be called under write lock */
 		void insert(ioready_callback * cb, ioready_events & old_mask, ioready_events & new_mask) /*throw(std::bad_alloc)*/;
-		
+
 		/* must be called under write lock */
 		void remove(ioready_callback * cb, ioready_events & old_mask, ioready_events & new_mask) noexcept;
-		
+
 		/* must be called under write lock */
 		inline ioready_events compute_mask(int fd)
 		{
 			ioready_events mask = ioready_none;
-			
+
 			volatile_table * tab = table_.load(std::memory_order_relaxed);
 			if (fd < 0 || size_t(fd) >= tab->capacity_) {
 				return mask;
 			}
 
 			file_descriptor_chain * entry = tab->entries_[fd].load(std::memory_order_relaxed);
-			
+
 			if (!entry) {
 				return mask;
 			}
-			
+
 			ioready_callback * tmp = entry->active_.load(std::memory_order_relaxed);
 			while (tmp) {
 				mask |= tmp->event_mask();
 				tmp = tmp->active_next_.load(std::memory_order_relaxed);
 			}
-			
+
 			return mask;
 		}
-		
+
 		/* must be called under read lock */
 		void cancel_all(void) noexcept;
-		
+
 		/* must be called under read lock */
 		inline void notify(int fd, ioready_events events, uint32_t call_cookie)
 		{
@@ -94,12 +94,12 @@ namespace tscb {
 			if (fd < 0 || size_t(fd) >= tab->capacity_) {
 				return;
 			}
-			
+
 			file_descriptor_chain * entry = tab->entries_[fd].load(std::memory_order_consume);
 			if (!entry) {
 				return;
 			}
-			
+
 			ioready_callback * cb = entry->active_.load(std::memory_order_consume);
 			while (cb) {
 				int32_t delta = entry->cookie_.load(std::memory_order_relaxed) - call_cookie;
@@ -112,16 +112,16 @@ namespace tscb {
 				cb = cb->active_next_.load(std::memory_order_consume);
 			}
 		}
-		
+
 		/* must be called after read_unlock/write_lock indicates that synchronization
 		is required */
 		ioready_callback * synchronize(void) noexcept;
-		
+
 		inline uint32_t get_cookie(void) const noexcept
 		{
 			return cookie_.load(std::memory_order_relaxed);
 		}
-		
+
 	protected:
 		class volatile_table {
 		public:
@@ -132,47 +132,47 @@ namespace tscb {
 					entries_[n].store(0, std::memory_order_relaxed);
 				}
 			}
-			
+
 			inline ~volatile_table(void) noexcept
 			{
 				delete []entries_;
 			}
-			
+
 			inline void clear_entries(void) noexcept
 			{
 				for (size_t n = 0; n < capacity_; ++n) {
 					delete entries_[n].load();
 				}
 			}
-			
+
 			size_t capacity_;
 			std::atomic<file_descriptor_chain *> * entries_;
-			
+
 			volatile_table * old_;
 		};
-		
+
 		/* must be called under write lock */
 		inline volatile_table * get_extend_table(int maxfd) /* throw(std::bad_alloc) */
 		{
 			volatile_table * tab = table_.load(std::memory_order_relaxed);
-			
+
 			if (__builtin_expect(tab->capacity_ <= (size_t)maxfd, 0)) {
 				return get_extend_table_slow(tab, maxfd);
 			}
-			
+
 			return tab;
 		}
-		
+
 		volatile_table * get_extend_table_slow(volatile_table * tab, int maxfd) /*throw(std::bad_alloc)*/;
-		
+
 		std::atomic<volatile_table *> table_;
 		ioready_callback * inactive_;
 		std::atomic<uint32_t> cookie_;
 		bool need_cookie_sync_;
 	};
-	
+
 	/** \endcond NEVER internal class */
-	
+
 }
 
 #endif

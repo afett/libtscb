@@ -19,11 +19,11 @@ class my_eventflag: public eventflag {
 public:
 	my_eventflag(void) : flagged(false) {}
 	virtual ~my_eventflag(void) throw() {}
-	
+
 	virtual void set(void) throw() {flagged=true;}
 	virtual void wait(void) throw() {while(!flagged);}
 	virtual void clear(void) throw() {flagged=false;}
-	
+
 	volatile bool flagged;
 };
 
@@ -62,7 +62,7 @@ public:
 	bool fn(long long &t) {return false;}
 	void pin(void) {refcount++;}
 	void release(void) {refcount--;}
-	
+
 	int refcount;
 };
 static inline void intrusive_ptr_add_ref(X *x) {x->pin();}
@@ -74,7 +74,7 @@ public:
 	bool fn(long long &t) {timer_link.disconnect(); return false;}
 	void pin(void) {refcount++;}
 	void release(void) {refcount--;}
-	
+
 	int refcount;
 };
 static inline void intrusive_ptr_add_ref(Y *y) {y->pin();}
@@ -83,29 +83,29 @@ static inline void intrusive_ptr_release(Y *y) {y->release();}
 void timer_tests(void)
 {
 	generic_timerqueue_dispatcher<long long> tq(flag);
-	
+
 	{
 		long long zero = 0;
 		bool pending = tq.run_queue(zero);
 		ASSERT(pending == false);
 	}
-	
+
 	{
 		long long zero = 0;;
 		bool pending = tq.run_queue(zero);
 		ASSERT(pending == false);
 	}
-	
+
 	{
 		called = 0;
 		long long time = 0;
-		
+
 		timer_link = tq.timer(my_fn, time);
 		ASSERT(timer_link.callback_->refcount_ == 2);
-		
+
 		ASSERT(flag.flagged == true);
 		flag.clear();
-		
+
 		bool pending = tq.run_queue(time);
 		ASSERT(pending == true);
 		ASSERT(called == 1);
@@ -118,21 +118,21 @@ void timer_tests(void)
 		ASSERT(pending == false);
 		ASSERT(called = 1);
 		ASSERT(flag.flagged == false);
-		
+
 		ASSERT(!timer_link.connected());
 	}
-	
+
 	{
 		long long time = 0;
 		timer_link = tq.timer(my_fn2, time);
-		
+
 		called = 0;
 		released = 0;
 		tq.run_queue(time);
 		ASSERT(called = 1);
 		ASSERT(!timer_link.connected());
 	}
-	
+
 	{
 		X x;
 		long long time(0);

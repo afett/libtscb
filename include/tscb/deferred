@@ -17,7 +17,7 @@
 
 /**
 	\page deferred_descr Deferred synchronization
-	
+
 	Modifiable data structures (e.g. linked lists, hash tables) that are
 	accessed from multiple threads require
 	synchronization between readers and writers. Traditianol forms of
@@ -25,7 +25,7 @@
 	while accessing the collection for either reading or writing; this
 	lock protects the data structure by allowing only one thread inside
 	a section of code that is accessing the data structure:
-	
+
 	\code
 		class list {
 		public:
@@ -33,10 +33,10 @@
 				list_element *prev, *next;
 				std::string key, value;
 			};
-			
+
 			list_element *first, *last;
 			pthread_mutex_t list_lock;
-			
+
 			void insert(list_element *e)
 			{
 				pthread_mutex_lock(&list_lock);
@@ -46,7 +46,7 @@
 				first=e;
 				pthread_mutex_unlock(&list_lock);
 			}
-			
+
 			void erase(const std::string &key)
 			{
 				pthread_mutex_lock(&list_lock);
@@ -64,15 +64,15 @@
 			...
 		};
 	\endcode
-	
+
 	This synchronisation scheme has the fundamental limitation that readers
-	exclude other readers, which strictly is not required to ensure 
+	exclude other readers, which strictly is not required to ensure
 	data consistency; one common relaxation is therefore to use a
 	"reader-writer"-lock where readers do not exclude other readers.
-	
+
 	Furthermore exclusion locks require strict lock ordering to
 	avoid potential deadlocks like the following:
-	
+
 	\code
 		void remove(List &list1, List &list2, std::string &key)
 		{
@@ -87,12 +87,12 @@
 			pthread_mutex_lock(&list1.list_unlock);
 		}
 	\endcode
-	
+
 	If the above \c remove function is called in two different threads
 	with two lists as arguments reversed, a deadlock may occur (this
 	deadlock is not fixable without introducing an additional superordinate
 	lock). A "reader-writer"-lock does not change this fundamental problem.
-	
+
 	Both problems can be solved by using "deferred synchronization". This allows
 	multiple concurrent readers to be active on a data structure; writers are
 	not	obstructed, but instead their modifications to the container will
@@ -100,16 +100,16 @@
 	containers is <I>asynchronous</I>, and synchronization of writers and
 	readers is <I>deferred</I> until a future point in time when no readers
 	are currently active.
-	
+
 	Two classes implement this kind of deferred synchronization:
-	
+
 	<UL>
 		<LI>\ref tscb::deferred_rwlock allows only deferred synchronization</LI>
 		<LI>\ref tscb::deferrable_rwlock allows both deferred and non-deferred synchronization</LI>
 	</UL>
-	
+
 	They provide the following guarantees:
-	
+
 	<UL>
 		<LI>
 			acquiring multiple nested read-locks in arbitrary order is
@@ -124,22 +124,22 @@
 			other read-locks or write-locks is deadlock free
 		</LI>
 	</UL>
-	
+
 	All cases of lock nesting not covered above depend on external
 	constraints wrt to lock acquisition to determine if they are
 	deadlock-free or not.
-	
+
 	The implementation is optimized under the assumption that access for
 	reading is significantly more commen than access for writing.
-	
+
 	\section deferred_sync_simple Using deferred updates
-	
+
 	Read access to a data structure protected by this kind of synchronization
 	mechanism is granted by calling the <CODE>read_lock</CODE> and
 	<CODE>read_unlock</CODE> methods around the relevant code blocks.
 	Both methods return a boolean indicating whether synchronization
 	is required:
-	
+
 	\code
 		tscb::deferred_rwlock guard;
 		...
@@ -157,17 +157,17 @@
 			guard.sync_finished();
 		}
 	\endcode
-	
+
 	Notice that <CODE>read_lock</CODE> has to be retried in a loop (but
 	see below), while <CODE>read_unlock</CODE> will always "succeed" in a sense.
 	It is important to note that <CODE>sync_finished</CODE> <B>must</B> be
 	called after any of these methods returns true -- until
 	<CODE>sync_finished</CODE> is called, both write and read access from
 	any other container will block!
-	
+
 	On the write side, deferred synchronization is provided by calling
 	<CODE>write_lock_async</CODE> and <CODE>write_unlock_async</CODE>:
-	
+
 	\code
 		tscb::deferred_rwlock guard;
 		...
@@ -192,45 +192,45 @@
 			// be deferred until then
 		}
 	\endcode
-	
+
 	Again the return code of <CODE>write_lock_async</CODE> indicates whether
 	synchronization is required and possible. Note that the easiest way
 	is to proceed as in the code shown below: Always enqueue modifications,
 	and only in the end decide to apply modifications immediately.
-	
+
 	Notice that the locking primitives are agnostic as to the structure
 	of the data protected and also do not care how updates are being
 	kept track of -- this is the responsibility of the caller! An
 	example demonstrating the concept for a simple linked list might
 	look as follows:
-	
+
 	\code
 		class ListElement {
 		public:
 			ListElement *prev, *next;
 			bool to_be_removed;
 		};
-		
+
 		class List {
 		public:
 			void traverse_list(void)
 			{
 				while(guard.read_lock()) synchronize();
-				
+
 				ListElement *current=first;
 				while(current) {
 					... // do something useful
 					current=current->next;
 				}
-				
+
 				if (guard.read_unlock()) synchronize();
 			}
 			void erase_element(ListElement *element)
 			{
 				bool sync=guard.write_lock_async();
-				
+
 				element->to_be_removed=true;
-				
+
 				if (sync) synchronize();
 				else guard.write_unlock_async();
 			}
@@ -249,23 +249,23 @@
 			tscb::deferred_rwlock guard;
 		};
 	\endcode
-	
+
 	(Note: in the example just above it might be a smart idea to mark
 	<CODE>to_be_removed</CODE> "volatile" and check its value while traversing
 	the	list).
-	
+
 	It is <I>possible</I> to use \ref tscb::deferred_rwlock::read_lock in
 	a fashion similiar to \ref tscb::deferred_rwlock::write_lock_async --
 	that is, not retry the locking operation and distinguish by the
 	return value only on unlock. However this opens up all lock-nesting
 	problems the implementation seeks to eliminate, so this is best
 	avoided.
-	
+
 	\section deferrable_sync_simple Using deferrable updates
-	
+
 	Using \ref tscb::deferrable_rwlock instead of \ref tscb::deferred_rwlock
 	allows to synchronously grab the write lock:
-	
+
 	\code
 		tscb::deferrable_sync guard;
 		...
@@ -277,23 +277,23 @@
 		// performed hede
 		guard.write_unlock_sync();
 	\endcode
-	
+
 	The call to <CODE>write_lock_sync</CODE> will <I>block</I> as long as
 	there is at least one reader who is holding a read lock, instead
 	of just returning "false" as <CODE>write_lock_async</CODE> does.
-	
+
 	The main purpose of the synchronous write lock versions is to allow
 	the caller to force a defined synchronization point, mainly to avoid
 	the starvation problem the fully asynchronous version has. It is
 	possible, though discouraged, to "abuse" this lock as an ordinary
 	(blocking) read-/write-lock.
-	
+
 	\section Performance
-	
+
 	The implementation has been optimized towards the read-path. For the
 	case that there are no queued modifications to be processed, the
 	overhead is as follows:
-	
+
 	<UL>
 		<LI>
 			<CODE>read_lock</CODE>: one successful atomic test-and-increment
@@ -305,15 +305,15 @@
 			zero
 		</LI>
 	</UL>
-	
+
 	For the write locks and for the read locks with contention (modifications
 	have been queued up asynchronously) the additional overhead consists of
 	one mutex acquisiton/release.
-	
+
 	For the \ref tscb::deferrable_rwlock case the additional cost in the
 	contention cases is a broadcast operation on a condition variable,
 	and waiting on the variable for the synchronous locks.
-	
+
 	Since the atomic variable is modified everytime a read lock is acquired,
 	the implementation does <I>not</I> provide the best possible level
 	of concurrency for multiple readers in different threads that frequently
@@ -323,20 +323,20 @@
 	cycles can be consolidated into a single locking call. For all
 	other purposes, ordinary mutexes should be used as they are
 	easier to understand.
-	
+
 */
 
 namespace tscb {
-	
+
 	/**
 		\brief Deferred reader-/writer synchronization
-		
+
 		This class provides methods to implement deferred reader-/writer-
 		synchronization. This means that both readers and writers
 		are allowed (almost) unimpeded access, and synchronization is
 		achieved by queueing up modifications that where made while
 		readers were still active.
-		
+
 		Perhaps the most useful application of this kind of synchronization
 		is that it is not required to worry about locking order; read and
 		write accesses to different data structures protected by this
@@ -351,20 +351,20 @@ namespace tscb {
 			: readers_(1), queued_(false)
 		{
 		}
-		
+
 		/**
 			\brief Try to acquire read lock
-			
+
 			Tries to acquire a read lock; read locks are "shared", that is
 			multiple readers may hold a read lock at the same time. A
 			read lock excludes synchronous writers.
-			
+
 			If this function returns "true", then the lock is now in
 			"synchronizing" state: all queued up modifications must be
 			applied, after that \ref sync_finished must be called and
 			finally the \ref read_lock must be retried.
-			
-			If this function returns "false", then the caller may simply 
+
+			If this function returns "false", then the caller may simply
 			proceed.
 		*/
 		inline bool read_lock(void) throw()
@@ -375,16 +375,16 @@ namespace tscb {
 				return read_lock_slow();
 			}
 		}
-		
+
 		/**
 			\brief Release read lock
-			
+
 			Releases a previously held read lock acquired by \ref read_lock.
-			
+
 			If this function returns "true", then the lock is now in
 			"synchronizing" state: all queued up modifications must
 			be applied, after that \ref sync_finished must be called.
-			
+
 			If this function returns "false", then the caller may simply
 			proceed.
 		*/
@@ -396,20 +396,20 @@ namespace tscb {
 				return read_unlock_slow();
 			}
 		}
-		
+
 		/**
 			\brief Try to acquire write lock
 
 			Tries to acquire a write lock; write locks are "exclusive", that
 			is they exclude both other readers and writers.
-			
+
 			If this function returns "true", then the lock is now in
 			"synchronizing" state: no other reader or writer can hold
 			the lock at this time, so it is permissible to do synchronous
 			modification of the data structure. All queued up modifications
 			must be applied, after that \ref sync_finished must be called
-			<B>instead of</B> \ref write_unlock_async to release the lock. 
-			
+			<B>instead of</B> \ref write_unlock_async to release the lock.
+
 			If this function returns false, then it was not possible
 			to acquire an exclusive lock, intended modifications have
 			to be queued up and cannot be applied directly. After
@@ -427,10 +427,10 @@ namespace tscb {
 			}
 			return false;
 		}
-		
+
 		/**
 			\brief Release write lock
-			
+
 			Releases a write lock previously acquired through \ref write_lock_async.
 			Note that this function <B>may not</B> be called if \ref write_lock_async
 			has returned true; call \ref sync_finished instead.
@@ -439,10 +439,10 @@ namespace tscb {
 		{
 			writers_.unlock();
 		}
-		
+
 		/**
 			\brief Synchronization completed
-			
+
 			Releases the lock out of "synchronizing" state, i.e. the state
 			that has been entered when any of the following functions
 			has returned true: \ref read_lock, \ref read_unlock, \ref write_lock_async.
@@ -453,12 +453,12 @@ namespace tscb {
 			readers_.fetch_add(1, std::memory_order_release);
 			write_unlock_async();
 		}
-		
+
 	private:
 		/* out of line slow-path functions */
 		bool read_lock_slow(void) throw();
 		bool read_unlock_slow(void) throw();
-		
+
 		inline bool read_acquire(void) throw()
 		{
 			size_t expected;
@@ -472,12 +472,12 @@ namespace tscb {
 			} while(__builtin_expect(!success, 0));
 			return true;
 		}
-		
+
 		inline bool read_release(void) throw()
 		{
 			return __builtin_expect(readers_.fetch_sub(1, std::memory_order_release)!=1, 1);
 		}
-		
+
 		std::atomic<size_t> readers_;
 		std::mutex writers_;
 		bool queued_;
@@ -485,20 +485,20 @@ namespace tscb {
 
 	/**
 		\brief Deferrable reader-/writer synchronization
-		
+
 		This class provides methods to implement deferred reader-/writer-
 		synchronization. This means that both readers and writers
 		are allowed (almost) unimpeded access, and synchronization is
 		achieved by queueing up modifications that where made while
 		readers were still active.
-		
+
 		Perhaps the most useful application of this kind of synchronization
 		is that it is not required to worry about locking order; read and
 		write accesses to different data structures protected by this
 		mechanism can be acquired and released in arbitrary order. The
 		downside is that there are no guarantees as to fairness or
 		starvation.
-		
+
 		In addition to the operations supported by \ref deferred_rwlock it is
 		also possible to synchronously acquire a write lock. Though this is
 		sometimes required, it is in this case necessary to carefully think
@@ -510,20 +510,20 @@ namespace tscb {
 			: readers_(1), queued_(false), waiting_(false)
 		{
 		}
-		
+
 		/**
 			\brief Try to acquire read lock
-			
+
 			Tries to acquire a read lock; read locks are "shared", that is
 			multiple readers may hold a read lock at the same time. A
 			read lock excludes synchronous writers.
-			
+
 			If this function returns "true", then the lock is now in
 			"synchronizing" state: all queued up modifications must be
 			applied, after that \ref sync_finished must be called and
 			finally the \ref read_lock must be retried.
-			
-			If this function returns "false", then the caller may simply 
+
+			If this function returns "false", then the caller may simply
 			proceed.
 		*/
 		inline bool read_lock(void) throw()
@@ -531,16 +531,16 @@ namespace tscb {
 			if (read_acquire()) return false;
 			return read_lock_slow();
 		}
-		
+
 		/**
 			\brief Release read lock
-			
+
 			Releases a previously held read lock acquired by \ref read_lock.
-			
+
 			If this function returns "true", then the lock is now in
 			"synchronizing" state: all queued up modifications must
 			be applied, after that \ref sync_finished must be called.
-			
+
 			If this function returns "false", then the caller may simply
 			proceed.
 		*/
@@ -549,20 +549,20 @@ namespace tscb {
 			if (read_release()) return false;
 			return read_unlock_slow();
 		}
-		
+
 		/**
 			\brief Try to acquire write lock
-			
+
 			Tries to acquire a write lock; write locks are "exclusive", that
 			is they exclude both other readers and writers.
-			
+
 			If this function returns "true", then the lock is now in
 			"synchronizing" state: no other reader or writer can hold
 			the lock at this time, so it is permissible to do synchronous
 			modification of the data structure. All queued up modifications
 			must be applied, after that \ref sync_finished must be called
-			<B>instead of</B> \ref write_unlock_async	to release the lock. 
-			
+			<B>instead of</B> \ref write_unlock_async	to release the lock.
+
 			If this function returns false, then it was not possible
 			to acquire an exclusive lock, intended modifications have
 			to be queued up and cannot be applied directly. After
@@ -575,7 +575,7 @@ namespace tscb {
 		{
 			writers_.lock();
 			bool sync = false;
-			
+
 			if ((!queued_) && (!waiting_)) {
 				sync = readers_.fetch_sub(1, std::memory_order_acquire) == 1;
 			}
@@ -583,10 +583,10 @@ namespace tscb {
 
 			return sync;
 		}
-		
+
 		/**
 			\brief Release write lock
-			
+
 			Releases a write lock previously acquired through \ref write_lock_async.
 			Note that this function <B>may not</B> be called if \ref write_lock_async
 			has returned true; call \ref sync_finished instead.
@@ -595,10 +595,10 @@ namespace tscb {
 		{
 			writers_.unlock();
 		}
-		
+
 		/**
 			\brief synchronously acquire write lock
-			
+
 			Acquires a write lock. This operation blocks until no other
 			readers or writers are active. After the caller is finished
 			he must call \ref write_unlock_sync.
@@ -617,10 +617,10 @@ namespace tscb {
 			}
 			return guard;
 		}
-		
+
 		/**
 			\brief release write lock
-			
+
 			Requires a write lock previously acquired by \ref write_lock_sync.
 			Note that this operation is completely equivalent to
 			\ref sync_finished.
@@ -632,10 +632,10 @@ namespace tscb {
 			readers_.fetch_sub(1, std::memory_order_release);
 			guard.unlock();
 		}
-		
+
 		/**
 			\brief Synchronization completed
-			
+
 			Releases the lock out of "synchronizing" state, i.e. the state
 			that has been entered when any of the following functions
 			has returned true: \ref read_lock, \ref read_unlock,
@@ -653,7 +653,7 @@ namespace tscb {
 		/* out of line slow-path functions */
 		bool read_lock_slow(void) throw();
 		bool read_unlock_slow(void) throw();
-		
+
 		inline bool read_acquire(void) throw()
 		{
 			size_t expected;
@@ -667,18 +667,18 @@ namespace tscb {
 			} while(__builtin_expect(!success, 0));
 			return true;
 		}
-		
+
 		inline bool read_release(void) throw()
 		{
 			return __builtin_expect(readers_.fetch_sub(1, std::memory_order_release)!=1, 1);
 		}
-		
+
 		std::atomic<size_t> readers_;
 		std::mutex writers_;
 		std::condition_variable waiting_writers_;
 		bool queued_, waiting_;
 	};
-	
+
 	template<typename Container>
 	class read_guard {
 	public:
@@ -688,18 +688,18 @@ namespace tscb {
 				container.synchronize();
 			}
 		}
-		
+
 		~read_guard(void)
 		{
 			if (container_.lock_.read_unlock()) {
 				container_.synchronize();
 			}
 		}
-		
+
 	private:
 		Container & container_;
 	};
-	
+
 	template<typename Container>
 	class async_write_guard {
 	public:
@@ -707,7 +707,7 @@ namespace tscb {
 		{
 			sync_ = container_.lock_.write_lock_async();
 		}
-		
+
 		~async_write_guard(void)
 		{
 			if (sync_) {
@@ -716,7 +716,7 @@ namespace tscb {
 				container_.lock_.write_unlock_async();
 			}
 		}
-		
+
 	private:
 		Container & container_;
 		bool sync_;
@@ -734,46 +734,46 @@ namespace tscb {
 			: readers(1), async_remove(0)
 		{
 		}
-		
+
 		inline void read_lock(void)
 		{
 			while (1) {
 				if (__builtin_expect(readers.inc_if_not_zero(), true))
 					return;
-				
+
 				writers.lock();
 				if (readers.inc_if_not_zero()) {
 					writers.unlock();
 					break;
 				}
-				
+
 				_cleanup_and_unlock();
 			}
 		}
-		
+
 		inline void read_unlock(void)
 		{
 			if (__builtin_expect(--readers, true)) return;
-			
+
 			writers.lock();
 			if (readers!=0) {
 				writers.unlock();
 				return;
 			}
-			
+
 			_cleanup_and_unlock();
 		}
-		
+
 		inline void write_lock(void)
 		{
 			writers.lock();
 		}
-		
+
 		inline void write_unlock(void)
 		{
 			writers.unlock();
 		}
-		
+
 		inline void deferred_destroy(T *object)
 		{
 			write_lock();
@@ -787,35 +787,35 @@ namespace tscb {
 			async_remove=0;
 			readers++;
 			write_unlock();
-			
+
 			while(remove) {
 				T *next=((*remove).*async_remove_next);
 				destroy(remove);
 				remove=next;
 			}
 		}
-		
+
 		inline void _deferred_destroy_unlock(T *object)
 		{
 			bool sync_cleanup=false;
 			if (!async_remove) sync_cleanup=(!--readers);
 			(*object).*async_remove_next=async_remove;
 			async_remove=object;
-			
+
 			if (!sync_cleanup) {
 				writers.unlock();
 				return;
 			}
-			
+
 			_cleanup_and_unlock();
 		}
-		
+
 		atomic readers;
 		mutex writers;
 		D destroy;
 		T *async_remove;
 	};
-	
+
 	template <
 		class T,
 		T *T::*prev = &T::prev,
@@ -878,9 +878,9 @@ namespace tscb {
 		T *first, *last;
 		friend class iterator;
 	};
-	
+
 #endif
-	
+
 }
 
 #endif

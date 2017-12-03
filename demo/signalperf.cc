@@ -16,7 +16,7 @@ double timed_run(std::function<void(size_t)> fn)
 {
 	double t=0.0;
 	size_t iterations=1;
-	
+
 	for(;;) {
 		struct timeval before, after, delta;
 		gettimeofday(&before, 0);
@@ -27,7 +27,7 @@ double timed_run(std::function<void(size_t)> fn)
 		if (t>0.5) break;
 		iterations=iterations*2;
 	}
-	
+
 	return t/iterations*1000000000;
 }
 
@@ -86,7 +86,7 @@ public:
 class tscb_test {
 public:
 	tscb::signal<void(int &)> sig;
-	
+
 	void call(size_t iterations, size_t ncallbacks)
 	{
 		tscb::connection conn[ncallbacks];
@@ -98,7 +98,7 @@ public:
 		for(size_t n=0; n<ncallbacks; n++)
 			conn[n].disconnect();
 	}
-	
+
 	void connect_disconnect(size_t iterations)
 	{
 		while(iterations--) {
@@ -111,7 +111,7 @@ public:
 class boost_test {
 public:
 	boost::signal<void(int &)> sig;
-	
+
 	void call(size_t iterations, size_t ncallbacks)
 	{
 		boost::signals::connection conn[ncallbacks];

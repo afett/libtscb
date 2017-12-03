@@ -18,22 +18,22 @@
 #include <tscb/eventflag>
 
 namespace tscb {
-	
+
 	eventtrigger::~eventtrigger(void) noexcept
 	{
 	}
-	
+
 	eventflag::~eventflag(void) noexcept
 	{
 	}
-	
-	
+
+
 	pipe_eventflag::pipe_eventflag(void) throw(std::runtime_error)
 		: flagged_(0), waiting_(0)
 	{
 		int filedes[2];
 		int error = -1;
-		
+
 #ifdef HAVE_PIPE2
 		error = ::pipe2(filedes, O_CLOEXEC);
 #endif
@@ -44,72 +44,72 @@ namespace tscb {
 				::fcntl(filedes[1], F_SETFL, O_CLOEXEC);
 			}
 		}
-		
+
 		if (error) {
 			throw std::runtime_error("Unable to create control pipe");
 		}
-		
+
 		readfd_ = filedes[0];
 		writefd_ = filedes[1];
 	}
-	
+
 	pipe_eventflag::~pipe_eventflag(void) noexcept
 	{
 		::close(readfd_);
 		::close(writefd_);
 	}
-	
+
 	void pipe_eventflag::set(void) noexcept
 	{
 		/* fast path (to avoid atomic op) if flag is already set */
 		if (flagged_.load(std::memory_order_relaxed) != 0) {
 			return;
 		}
-		
+
 		/* atomic exchange to ensure only one setter can "see" the
 		0->1 transition; otherwise we could have spurious wakeups */
 		int expected = 0;
 		if (!flagged_.compare_exchange_strong(expected, 1, std::memory_order_release)) {
 			return;
 		}
-		
+
 		/* we are now certain that we have switched the flag from 0 to 1;
 		if no one has been waiting before we switched the flag,
 		there is no one to wakeup */
-		
+
 		if (__builtin_expect(waiting_.load(std::memory_order_relaxed) == 0, true)) {
 			return;
 		}
-		
+
 		/* at least one thread has been marked "waiting"; we have to
 		post a wakeup; the last thread that was waiting will clear
 		the control pipe */
-		
+
 		expected = 1;
 		if (!flagged_.compare_exchange_strong(expected, 2, std::memory_order_relaxed)) {
 			return;
 		}
-		
+
 		char c = 0;
 		write(writefd_, &c, 1);
 	}
-	
+
 	void pipe_eventflag::start_waiting(void) noexcept
 	{
 		/* slow path */
 		waiting_.fetch_add(1, std::memory_order_relaxed);
 	}
-	
+
 	void pipe_eventflag::wait(void) noexcept
 	{
 		/* fast path to avoid atomic op if flag is already set */
 		if (flagged_.load(std::memory_order_acquire) != 0) {
 			return;
 		}
-		
+
 		/* slow path */
 		start_waiting();
-		
+
 		if (flagged_.load(std::memory_order_acquire) == 0) {
 			#ifdef HAVE_POLL
 			struct pollfd pfd;
@@ -127,16 +127,16 @@ namespace tscb {
 			write(writefd_, &c, 1);
 			#endif
 		}
-		
+
 		stop_waiting();
-		
+
 	}
-	
+
 	void pipe_eventflag::stop_waiting(void) noexcept
 	{
 		waiting_.fetch_sub(1, std::memory_order_relaxed);
 	}
-	
+
 	void pipe_eventflag::clear(void) noexcept
 	{
 		int oldval;
@@ -154,24 +154,24 @@ namespace tscb {
 		if (__builtin_expect(oldval == 1, true)) {
 			return;
 		}
-		
+
 		/* a wakeup has been sent the last time the flag was raised;
 		clear the control pipe */
 		char c;
 		read(readfd_, &c, 1);
 	}
-	
+
 	platform_eventflag::platform_eventflag(void) noexcept
 		: mutex_((pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER),
 		cond_((pthread_cond_t)PTHREAD_COND_INITIALIZER),
 		flagged_(false)
 	{
 	}
-	
+
 	platform_eventflag::~platform_eventflag(void) noexcept
 	{
 	}
-	
+
 	void platform_eventflag::set(void) noexcept
 	{
 		pthread_mutex_lock(&mutex_);
@@ -179,7 +179,7 @@ namespace tscb {
 		pthread_cond_broadcast(&cond_);
 		pthread_mutex_unlock(&mutex_);
 	}
-	
+
 	void platform_eventflag::wait(void) noexcept
 	{
 		pthread_mutex_lock(&mutex_);
@@ -188,25 +188,25 @@ namespace tscb {
 		}
 		pthread_mutex_unlock(&mutex_);
 	}
-	
+
 	void platform_eventflag::clear(void) noexcept
 	{
 		pthread_mutex_lock(&mutex_);
 		flagged_ = false;
 		pthread_mutex_unlock(&mutex_);
 	}
-	
+
 	#if 0
-	
+
 	signal_eventflag::signal_eventflag(pthread_t _thread, int _signo) noexcept
 		: thread(_thread), signo(_signo)
 	{
 	}
-	
+
 	signal_eventflag::~signal_eventflag(void) noexcept
 	{
 	}
-	
+
 	void signal_eventflag::set(void) noexcept
 	{
 		if (!flagged) {
@@ -214,36 +214,36 @@ namespace tscb {
 			wakeups (through spurious signal to the thread), but not missed
 			wakeups */
 			flagged=true;
-			
+
 			/* PREMISE: system calls are implicit memory fences */
-			
+
 			pthread_kill(thread, signo);
 		}
 	}
-	
+
 	void signal_eventflag::wait(void) noexcept
 	{
 		sigset_t set;
-		
+
 		sigemptyset(&set);
 		sigaddset(&set, signo);
-		
+
 		int s;
 		sigwait(&set, &s);
 	}
-	
+
 	void signal_eventflag::clear(void) noexcept
 	{
 		if (flagged) { sigtimedwait
 		sigset_t set;
-		
+
 		sigemptyset(&set);
 		sigaddset(&set, signo);
-		
+
 		int s;
 		if (sigpending
 	}
-	
+
 	#endif
-	
+
 }

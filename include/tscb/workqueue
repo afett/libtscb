@@ -13,38 +13,38 @@
 
 /**
 	\page workqueue_descr Workqueue interface
-	
+
 	The \ref tscb::workqueue_service interface provides a
 	mechanism for queueing up work to be performed later
 	("deferred procedure calls").
-	
-	
+
+
 */
 
 namespace tscb {
-	
+
 	/**
 		\brief Queue of work items to be performed
-		
+
 		This class provides the interface for submitting
 		functions calls to be performed at some later point in time.
 	*/
-	
+
 	class workqueue_service {
 	public:
 		virtual ~workqueue_service(void) throw();
-		
+
 		/**
 			\brief Queue a single function call
-			
+
 			\param function Function to be executed
-			
+
 			Queues the given function call for later execution.
 		*/
 		virtual
 		void post(std::function<void(void)> function) /*throw(std::bad_alloc)*/ = 0;
 	};
-	
+
 };
 
 #endif

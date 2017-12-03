@@ -33,11 +33,11 @@ void create_pipes(void)
 {
 	int filedes[2], error;
 	std::vector<int> reserved_fds;
-	
+
 	for(int n = 0; n < num_reserved_fds; ++n) {
 		reserved_fds.push_back(open("/dev/null", O_RDONLY));
 	}
-	
+
 	int n = 0;
 	for(;;) {
 		error=pipe(filedes);
@@ -55,9 +55,9 @@ void create_pipes(void)
 		write_fds.push_back(filedes[1]);
 		n++;
 	}
-	
+
 	fprintf(stderr, "created %d pipe pairs\n", n);
-	
+
 	for(n=0; n<num_reserved_fds; n++) close(reserved_fds[n]);
 }
 
@@ -72,13 +72,13 @@ void cleanup_pipes(void)
 class perfcounter {
 public:
 	perfcounter(void);
-	
+
 	void count(void);
-	
+
 	int counter, iterations;
 	std::chrono::steady_clock::time_point begin;
 	double loopspersecond;
-	
+
 	volatile bool finished;
 };
 
@@ -90,7 +90,7 @@ perfcounter::perfcounter(void)
 	loopspersecond=0;
 	finished=false;
 }
-	
+
 void perfcounter::count(void)
 {
 	if (!finished) {
@@ -118,7 +118,7 @@ public:
 	~receiver(void);
 	void pass_token(tscb::ioready_events events);
 	void release(void);
-	
+
 	tscb::ioready_connection link;
 private:
 	int from_, to_;
@@ -164,18 +164,18 @@ tscb::ioready_dispatcher *prepare_ring(int start, int nelements,
 	perfcounter &counter, int ninject=1)
 {
 	tscb::ioready_dispatcher *d=tscb::create_ioready_dispatcher();
-	
+
 	for(int n = 0; n < nelements; ++n)
 		receivers.push_back(
-			new receiver(d, read_fds[start + n], 
+			new receiver(d, read_fds[start + n],
 				write_fds[start + (n + 1) % nelements],
 				counter)
 		);
-	
+
 	/* FIXME: inject n tokens */
 	char buffer = 0;
 	write(write_fds[start], &buffer, 1);
-	
+
 	return d;
 }
 
@@ -186,7 +186,7 @@ public:
 		, cancelled_(false), flag_(dispatcher_->get_eventflag())
 	{
 	}
-	
+
 	void thread_func(void) noexcept {
 		while (!cancelled_.load()) {
 			dispatcher_->dispatch(nullptr);
@@ -197,7 +197,7 @@ public:
 		cancelled_.store(true);
 		flag_.set();
 	}
-	
+
 	std::unique_ptr<tscb::ioready_dispatcher> dispatcher_;
 	std::atomic<bool> cancelled_;
 	tscb::eventflag & flag_;
@@ -208,7 +208,7 @@ void run_independent(size_t nthreads, int nelements)
 	std::vector<perfcounter> counter;
 	std::vector<std::unique_ptr<dispatcher_worker>> dispatchers;
 	std::vector<std::thread> threads;
-	
+
 	counter.resize(nthreads);
 
 	for (size_t n = 0; n < nthreads; ++n) {
@@ -218,7 +218,7 @@ void run_independent(size_t nthreads, int nelements)
 	for (size_t n = 0; n < nthreads; ++n) {
 		threads.emplace_back(&dispatcher_worker::thread_func, dispatchers[n].get());
 	}
-	
+
 	for (;;) {
 		bool all_finished = true;
 		for (size_t n = 0; n < nthreads; ++n) {
@@ -231,12 +231,12 @@ void run_independent(size_t nthreads, int nelements)
 		}
 	}
 
-	
+
 	for (size_t n = 0; n < nthreads; ++n) {
 		dispatchers[n]->cancel();
 		threads[n].join();
 	}
-	
+
 	double sum = 0.0;
 	for (size_t n = 0; n < nthreads; ++n) {
 		sum += counter[n].loopspersecond;
@@ -246,7 +246,7 @@ void run_independent(size_t nthreads, int nelements)
 		printf(" %g", counter[n].loopspersecond);
 	}
 	printf("\n");
-	
+
 	cleanup_receivers();
 }
 
@@ -268,6 +268,6 @@ void run_independent(void)
 int main()
 {
 	create_pipes();
-	
+
 	run_independent();
 }

@@ -11,9 +11,9 @@
 #include <stdio.h>
 
 namespace tscb {
-	
+
 	abstract_callback::~abstract_callback(void) throw()
 	{
 	}
-	
+
 }; /* namespace callback */

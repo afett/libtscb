@@ -17,18 +17,18 @@
 void test_pipe_eventflag(void)
 {
 	tscb::pipe_eventflag e;
-	
+
 	ASSERT(e.flagged_ == 0);
 	e.set();
 	ASSERT(e.flagged_ == 1);
 	e.clear();
 	ASSERT(e.flagged_ == 0);
-	
+
 	e.start_waiting();
 	ASSERT(e.waiting_ == 1);
 	e.stop_waiting();
 	ASSERT(e.waiting_ == 0);
-	
+
 	e.set();
 	ASSERT(e.flagged_ == 1);
 	e.clear();

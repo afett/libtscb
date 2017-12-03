@@ -11,7 +11,7 @@
 
 /**
 	\page async_safe_work_descr Async-safe triggered work interface
-	
+
 */
 
 #include <list>
@@ -20,26 +20,26 @@
 #include <tscb/signal>
 
 namespace tscb {
-	
+
 	class async_safe_callback;
 	class async_safe_connection;
 	class async_safe_work_service;
 	class async_safe_work_dispatcher;
-	
+
 	class async_safe_callback : public abstract_callback {
 	public:
 		virtual
 		~async_safe_callback(void) noexcept;
-		
+
 		virtual void
 		disconnect(void) noexcept;
-		
+
 		virtual bool
 		connected(void) const noexcept;
-		
+
 		inline void
 		trigger(void) noexcept;
-	
+
 	protected:
 		inline async_safe_callback(std::function<void(void)> function, async_safe_work_dispatcher * service)
 			: function_(std::move(function))
@@ -50,44 +50,44 @@ namespace tscb {
 			, service_(service)
 			, disconnected_(false)
 		{}
-		
+
 		inline void
 		trigger_bottom(void) noexcept;
-	
+
 		std::function<void(void)> function_;
-		
+
 		std::atomic_flag activation_flag_;
 		async_safe_callback * pending_next_;
 		async_safe_callback * prev_, * next_;
 		async_safe_work_dispatcher * service_;
-		
+
 		enum state_type {
 			state_connected,
 			state_disconnect_async,
 			state_disconnected
 		};
-		
+
 		bool disconnected_;
-		
+
 		/** \internal \brief Serialize deregistration */
 		std::mutex registration_mutex_;
-		
+
 		friend class async_safe_work_dispatcher;
 		friend class async_pending_dequeue_helper;
 	};
-	
+
 	/**
 		\brief Connection between signal and receiver
-		
+
 		Every other connection implemented in this library can be
 		downcast to this type.
 	*/
 	class async_safe_connection : public eventtrigger {
 	public:
 		virtual ~async_safe_connection(void) noexcept;
-		
+
 		inline async_safe_connection() noexcept : callback_(nullptr) {}
-		
+
 		inline async_safe_connection(async_safe_callback * callback = nullptr, bool add_ref = true) noexcept
 			: callback_(callback)
 		{
@@ -95,7 +95,7 @@ namespace tscb {
 				callback_->pin();
 			}
 		}
-		
+
 		inline async_safe_connection(const async_safe_connection & other) noexcept
 			: callback_(other.callback_)
 		{
@@ -103,13 +103,13 @@ namespace tscb {
 				callback_->pin();
 			}
 		}
-		
+
 		inline async_safe_connection(async_safe_connection && other) noexcept
 			: callback_(other.callback_)
 		{
 			other.callback_ = nullptr;
 		}
-		
+
 		inline const async_safe_connection & operator=(const async_safe_connection & other) noexcept
 		{
 			if (callback_) {
@@ -121,7 +121,7 @@ namespace tscb {
 			}
 			return *this;
 		}
-		
+
 		inline const async_safe_connection & operator=(async_safe_callback * callback) noexcept
 		{
 			if (callback_) {
@@ -133,7 +133,7 @@ namespace tscb {
 			}
 			return *this;
 		}
-		
+
 		inline const async_safe_connection & operator=(async_safe_connection && other) noexcept
 		{
 			if (callback_) {
@@ -143,7 +143,7 @@ namespace tscb {
 			other.callback_ = nullptr;
 			return *this;
 		}
-		
+
 		template<typename ConnectionType>
 		inline const async_safe_connection & operator=(ConnectionType && other) noexcept
 		{
@@ -154,7 +154,7 @@ namespace tscb {
 			other.callback_ = nullptr;
 			return *this;
 		}
-		
+
 		inline void disconnect(void) noexcept
 		{
 			if (callback_) {
@@ -163,48 +163,48 @@ namespace tscb {
 				callback_ = nullptr;
 			}
 		}
-		
+
 		inline bool connected(void) const noexcept
 		{
 			return callback_ && callback_->connected();
 		}
-		
+
 		inline operator connection (void) const noexcept {
 			return connection(callback_, true);
 		}
-		
+
 		inline void set(void) noexcept
 		{
 			callback_->trigger();
 		}
-		
+
 		inline async_safe_callback * get(void) const noexcept
 		{
 			return callback_;
 		}
-		
+
 	private:
 		friend class connection;
 
 		async_safe_callback * callback_;
 	};
-	
+
 	/**
 		\brief Async-triggered procedures interface
-		
+
 		Represents a registration interface for procedures that can be
 		triggered in an async-safe way.
 	*/
 	class async_safe_work_service {
 	public:
 		virtual ~async_safe_work_service(void) noexcept;
-		
+
 		/**
 			\brief Register async-safe triggered work procedure
-			
+
 			\param function The procedure to be called
 			\returns Connection object
-			
+
 			Registers a procedure and associates it with an eventflag.
 			When the eventflag is set, the designated procedure will
 			eventually be called at least once. The eventflag can
@@ -213,19 +213,19 @@ namespace tscb {
 		virtual async_safe_connection
 		async_procedure(std::function<void(void)> function) = 0;
 	};
-	
+
 	/**
 		\brief Stand-alone dispatcher for async-triggered procedures
 	*/
 	class async_safe_work_dispatcher : public async_safe_work_service {
 	public:
 		async_safe_work_dispatcher(eventtrigger & trigger);
-		
+
 		virtual ~async_safe_work_dispatcher(void) noexcept;
-		
+
 		virtual async_safe_connection
 		async_procedure(std::function<void(void)> function);
-		
+
 		/**
 			\brief Dispatch pending events
 			\return
@@ -233,25 +233,25 @@ namespace tscb {
 		*/
 		virtual size_t
 		dispatch(void);
-		
+
 	protected:
 		/** \internal \brief Singly-linked list of pending async procedures */
 		std::atomic<async_safe_callback *> pending_;
-		
+
 		/** \internal \brief Count of procs to be cancelled asynchronously */
 		std::atomic<size_t> async_cancel_count_;
-		
+
 		/** \internal \brief Doubly-linked list of available async procedures */
 		async_safe_callback * first_;
 		async_safe_callback * last_;
-		
+
 		std::mutex list_mutex_;
-		
+
 		eventtrigger & trigger_;
-		
+
 		friend class async_safe_callback;
 	};
-	
+
 	inline void
 	async_safe_callback::trigger(void) noexcept
 	{
@@ -259,10 +259,10 @@ namespace tscb {
 		if (activation_flag_.test_and_set(std::memory_order_acquire)) {
 			return;
 		}
-		
+
 		trigger_bottom();
 	}
-	
+
 	inline void
 	async_safe_callback::trigger_bottom(void) noexcept
 	{
@@ -273,7 +273,7 @@ namespace tscb {
 		/* small(ish) problem: trigger might race with final clean-up */
 		service_->trigger_.set();
 	}
-	
+
 };
 
 #endif

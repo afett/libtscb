@@ -38,17 +38,17 @@ static void dummy_work(int * what)
 void test_basic_operation(void)
 {
 	tscb::posix_reactor reactor;
-	
+
 	{
 		int timer_called = 0;
 		tscb::connection c = reactor.timer(std::bind(dummy_timer, &timer_called, std::placeholders::_1), std::chrono::steady_clock::now());
 		reactor.dispatch();
-		
+
 		assert(timer_called);
-		
+
 		c.disconnect();
 	}
-	
+
 	{
 		int fds[2];
 		int reader_called = 0;
@@ -57,23 +57,23 @@ void test_basic_operation(void)
 		reactor.get_eventtrigger().set();
 		reactor.dispatch();
 		assert(!reader_called);
-		
+
 		write(fds[1], "x", 1);
 		reactor.get_eventtrigger().set();
 		reactor.dispatch();
 		assert(reader_called);
-		
+
 		c.disconnect();
-		
+
 		close(fds[0]);
 		close(fds[1]);
 	}
-	
+
 	{
 		int worker_called = 0;
 		reactor.post(std::bind(dummy_work, &worker_called));
 		reactor.dispatch();
-		
+
 		assert(worker_called);
 	}
 }
@@ -87,10 +87,10 @@ static void perpetual_work(tscb::posix_reactor_service & reactor, int * what)
 void test_workqueue_monopolization(void)
 {
 	tscb::posix_reactor reactor;
-	
+
 	int count = 0;
 	perpetual_work(reactor, &count);
-	
+
 	while(count < 10)
 		reactor.dispatch();
 }
@@ -98,70 +98,70 @@ void test_workqueue_monopolization(void)
 void test_pending(void)
 {
 	tscb::posix_reactor reactor;
-	
+
 	assert(reactor.dispatch_pending() == false);
-	
+
 	/* timers pending */
 	{
 		int timer_called = 0;
 		std::chrono::steady_clock::time_point due = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
 		tscb::connection c = reactor.timer(std::bind(dummy_timer, &timer_called, std::placeholders::_1), due);
-		
+
 		/* registering a new event source may as a side effect cause
 		a spurious wakeup, so clear this first */
 		while (reactor.dispatch_pending()) { /* nothing */ }
-		
+
 		assert(!timer_called);
-		
+
 		while (std::chrono::steady_clock::now() < due) {
 			usleep(1000);
 		}
-		
+
 		assert(reactor.dispatch_pending());
-		
+
 		assert(timer_called);
-		
+
 		c.disconnect();
 		/* removal may cause spurious wakeup as well */
 		reactor.dispatch_pending_all();
 	}
-	
+
 	/* io events pending */
 	{
 		int fds[2];
 		int reader_called = 0;
 		pipe(fds);
 		tscb::connection c = reactor.watch(std::bind(dummy_reader, &reader_called, fds[0], std::placeholders::_1), fds[0], tscb::ioready_input);
-		
+
 		/* registering a new event source may as a side effect cause
 		a spurious wakeup, so clear this first */
 		reactor.dispatch_pending_all();
-		
+
 		assert(!reader_called);
-		
+
 		write(fds[1], "x", 1);
-		
+
 		assert(reactor.dispatch_pending());
-		
+
 		assert(reader_called);
-		
+
 		c.disconnect();
-		
+
 		close(fds[0]);
 		close(fds[1]);
 		/* removal may cause spurious wakeup as well */
 		while(reactor.dispatch_pending()) { /* nothing */ }
 	}
-	
+
 	/* pending work items */
 	{
 		int worker_called = 0;
 		reactor.post(std::bind(dummy_work, &worker_called));
-		
+
 		assert(reactor.dispatch_pending());
-		
+
 		assert(worker_called);
-		
+
 		assert(!reactor.dispatch_pending());
 	}
 }

@@ -77,18 +77,18 @@ void test_basic_operation(void)
 {
 	sigchld_guard guard;
 	tscb::childproc_monitor m;
-	
+
 	called_count.store(0);
-	
+
 	pid_t pid = launch_temp_process();
-	
+
 	tscb::connection c = m.watch_childproc(std::bind(proc_handler), pid);
-	
+
 	assert(called_count == 0);
-	
+
 	/* wait until child process has terminated */
 	guard.wait();
-	
+
 	m.dispatch();
 	assert(called_count == 1);
 }
@@ -97,28 +97,28 @@ void test_cancel(void)
 {
 	sigchld_guard guard;
 	tscb::childproc_monitor m;
-	
+
 	called_count.store(0);
-	
+
 	pid_t pid = launch_pers_process();
-	
+
 	tscb::connection c = m.watch_childproc(std::bind(proc_handler), pid);
-	
+
 	m.dispatch();
-	
+
 	/* not exited yet */
 	assert(called_count == 0);
-	
+
 	c.disconnect();
-	
+
 	kill(pid, SIGTERM);
 	/* wait until child process has terminated */
 	guard.wait();
-	
+
 	/* callback cancelled, should not reap */
 	m.dispatch();
 	assert(called_count == 0);
-	
+
 	int status;
 	waitpid(pid, &status, 0);
 }
@@ -127,20 +127,20 @@ void test_ignore_unknown(void)
 {
 	sigchld_guard guard;
 	tscb::childproc_monitor m;
-	
+
 	called_count.store(0);
-	
+
 	pid_t pid = launch_temp_process();
-	
+
 	/* wait until child process has terminated */
 	guard.wait();
-	
+
 	/* but dispatcher does not yet know about it, so won't reap */
 	m.dispatch();
 	assert(called_count == 0);
-	
+
 	tscb::connection c = m.watch_childproc(std::bind(proc_handler), pid);
-	
+
 	/* now that dispatcher knows, it will reap */
 	m.dispatch();
 	assert(called_count == 1);
@@ -150,36 +150,36 @@ void test_throwing_handler(void)
 {
 	sigchld_guard guard;
 	tscb::childproc_monitor m;
-	
+
 	called_count.store(0);
-	
+
 	pid_t pid1 = launch_temp_process();
 	/* wait until child process has terminated */
 	guard.wait();
-	
+
 	pid_t pid2 = launch_temp_process();
 	/* wait until child process has terminated */
 	guard.wait();
-	
+
 	tscb::connection c1 = m.watch_childproc(std::bind(throwing_proc_handler), pid1);
 	tscb::connection c2 = m.watch_childproc(std::bind(throwing_proc_handler), pid2);
-	
+
 	try {
 		m.dispatch();
 		assert(false);
 	}
 	catch(std::runtime_error) {
 	}
-	
+
 	assert(called_count == 1);
-	
+
 	try {
 		m.dispatch();
 		assert(false);
 	}
 	catch(std::runtime_error) {
 	}
-	
+
 	assert(called_count == 2);
 }
 

@@ -23,16 +23,16 @@ class echo {
 public:
 	echo(tscb::ioready_service * service, int fd);
 	~echo(void);
-	
+
 private:
 	void data(int event);
 	void destroy(void);
-	
+
 	int fd_;
 	tscb::ioready_connection link_;
 	tscb::ioready_service *service_;
 	std::atomic_int refcount_;
-	
+
 	friend inline void intrusive_ptr_add_ref(echo * e) noexcept
 	{
 		e->refcount_.fetch_add(1, std::memory_order_relaxed);
@@ -49,15 +49,15 @@ private:
 class acceptor {
 public:
 	acceptor(tscb::ioready_service * service, int fd);
-	
+
 private:
 	void connection_request(int event);
-	
+
 	int fd_;
 	tscb::ioready_connection link_;
 	tscb::ioready_service * service_;
 	std::atomic_int refcount_;
-	
+
 	friend inline void intrusive_ptr_add_ref(acceptor * a) noexcept
 	{
 		a->refcount_.fetch_add(1, std::memory_order_relaxed);
@@ -77,7 +77,7 @@ echo::echo(tscb::ioready_service *service, int fd)
 	int flags = fcntl(fd, F_GETFL);
 	flags |= O_NONBLOCK;
 	fcntl(fd, F_SETFL, flags);
-	
+
 	link_ = service->watch(std::bind(&echo::data, tscb::intrusive_ptr<echo>(this), std::placeholders::_1),
 		fd, tscb::ioready_input);
 }
@@ -113,7 +113,7 @@ acceptor::acceptor(tscb::ioready_service *service, int fd)
 	int flags=fcntl(fd_, F_GETFL);
 	flags |= O_NONBLOCK;
 	fcntl(fd_, F_SETFL, flags);
-	
+
 	link_ = service->watch(std::bind(&acceptor::connection_request,
 		tscb::intrusive_ptr<acceptor>(this), std::placeholders::_1), fd, tscb::ioready_input);
 }
@@ -129,27 +129,27 @@ void acceptor::connection_request(int event)
 
 int main(int argc, char **argv)
 {
-	
+
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
-	
+
 	struct sockaddr_in addr;
 	addr.sin_family=AF_INET;
 	addr.sin_port=htons(1234);
 	addr.sin_addr.s_addr=inet_addr("0.0.0.0");
-	
+
 	int reuse_flag = 1;
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_flag, sizeof(reuse_flag));
 	bind(sock, (struct sockaddr *)&addr, sizeof(addr));
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_flag, sizeof(reuse_flag));
 	listen(sock, 25);
-	
+
 	tscb::ioready_dispatcher * dispatcher=tscb::create_ioready_dispatcher();
-	
+
 	new acceptor(dispatcher, sock);
-	
+
 	for(;;) {
 		dispatcher->dispatch(0);
 	}
-	
+
 	return 0;
 }

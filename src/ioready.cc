@@ -11,7 +11,7 @@
 #include <tscb/ioready>
 
 namespace tscb {
-	
+
 	void ioready_callback::disconnect(void) throw()
 	{
 		cancellation_mutex_.lock();
@@ -22,12 +22,12 @@ namespace tscb {
 			cancellation_mutex_.unlock();
 		}
 	}
-	
+
 	bool ioready_callback::connected(void) const throw()
 	{
 		return !!service_.load(std::memory_order_acquire);
 	}
-	
+
 	void ioready_callback::modify(ioready_events evmask) throw()
 	{
 		if (evmask != ioready_none) {
@@ -40,22 +40,22 @@ namespace tscb {
 		}
 		cancellation_mutex_.unlock();
 	}
-	
+
 	ioready_callback::~ioready_callback(void) throw()
 	{
 	}
-	
+
 	ioready_service::~ioready_service(void) throw()
 	{
 	}
-	
+
 	ioready_dispatcher::~ioready_dispatcher(void) throw()
 	{
 	}
-	
+
 	static ioready_dispatcher *
 	create_ioready_dispatcher_probe(void) throw(std::bad_alloc, std::runtime_error);
-	
+
 	#ifdef HAVE_KQUEUE
 	ioready_dispatcher *
 	create_ioready_dispatcher_kqueue(void) throw(std::bad_alloc, std::runtime_error);
@@ -72,12 +72,12 @@ namespace tscb {
 	ioready_dispatcher *
 	create_ioready_dispatcher_select(void) throw(std::bad_alloc, std::runtime_error);
 	#endif
-	
+
 	typedef ioready_dispatcher *(*ioready_dispatcher_creator_func_t)(void);
-	
+
 	static ioready_dispatcher_creator_func_t ioready_dispatcher_creator_func
 		=&create_ioready_dispatcher_probe;
-		
+
 	static ioready_dispatcher_creator_func_t probe_functions[]={
 	#ifdef HAVE_KQUEUE
 		&create_ioready_dispatcher_kqueue,
@@ -93,7 +93,7 @@ namespace tscb {
 	#endif
 		0
 	};
-	
+
 	ioready_dispatcher *
 	create_ioready_dispatcher_probe(void) throw(std::bad_alloc, std::runtime_error)
 	{
@@ -112,17 +112,17 @@ namespace tscb {
 			return dispatcher;
 		}
 	}
-	
+
 	ioready_dispatcher *
 	create_ioready_dispatcher(void) /* throw(std::bad_alloc, std::runtime_error) */
 	{
 		return (*ioready_dispatcher_creator_func)();
 	}
-	
+
 	ioready_dispatcher *
 	ioready_dispatcher::create(void) /* throw(std::bad_alloc, std::runtime_error) */
 	{
 		return create_ioready_dispatcher();
 	}
-	
+
 }

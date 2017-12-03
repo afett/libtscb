@@ -18,22 +18,22 @@
 #include <tscb/file-descriptor-table>
 
 namespace tscb {
-	
+
 	/**
 		\brief Dispatcher for IO readiness events using the
 		<TT>select</TT> system call
-		
+
 		This class supports collecting the IO readiness state of
 		a set of file descriptors using the <TT>select</TT> system
 		call, and dispatching callbacks to receivers that have
 		registered themselves for events on specific file descriptors.
-		
+
 		<TT>select</TT> is the most portable system call to determine
 		the IO readiness state of a set of descriptors, but also
 		by far the slowest. It has a hard (compile-time) limitation
 		on the number of permissible descriptors, and is O(n) in
 		the number of descriptors watched.
-		
+
 		Use of this dispatcher should be avoided if possible, choose
 		one of the better performing alternatives instead and fall
 		back to \ref tscb::ioready_dispatcher_select "ioready_dispatcher_select"
@@ -43,13 +43,13 @@ namespace tscb {
 	public:
 		ioready_dispatcher_select(void) /*throw(std::bad_alloc, std::runtime_error)*/;
 		virtual ~ioready_dispatcher_select(void) throw();
-		
+
 		virtual size_t dispatch(const std::chrono::steady_clock::duration * timeout, size_t max);
-		
+
 		virtual size_t dispatch_pending(size_t max);
-		
+
 		virtual eventtrigger & get_eventtrigger(void) throw();
-		
+
 		virtual void register_ioready_callback(ioready_callback *l)
 			/*throw(std::bad_alloc)*/;
 		virtual void unregister_ioready_callback(ioready_callback *e)
@@ -60,22 +60,22 @@ namespace tscb {
 		pthread_mutex_t fdset_mtx_;
 		fd_set readfds_, writefds_, exceptfds_;
 		int maxfd_;
-		
+
 		void synchronize(void) throw();
 		void update_fdsets(int fd, ioready_events mask) throw();
-		
+
 		file_descriptor_table fdtab_;
-		
+
 		deferrable_rwlock lock_;
 		friend class read_guard<ioready_dispatcher_select>;
 		friend class async_write_guard<ioready_dispatcher_select>;
-		
+
 		pipe_eventflag wakeup_flag_;
-		
+
 	private:
 		void drain_queue(void) throw();
 	};
-	
+
 }
 
 #endif

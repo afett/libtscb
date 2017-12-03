@@ -9,9 +9,9 @@
 #include <tscb/workqueue>
 
 namespace tscb {
-	
+
 	workqueue_service::~workqueue_service(void) throw()
 	{
 	}
-	
+
 };

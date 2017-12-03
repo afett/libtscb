@@ -102,12 +102,12 @@ int ncallbacks;
 void callback_obj(int times)
 {
 	tscb::signal<void (int)> chain;
-	
+
 	int num=ncallbacks;
-	
+
 	while(num--)
 		chain.connect(std::bind(&CallbackReceiver::callback, &receiver, std::placeholders::_1));
-	
+
 	while(times--)
 		chain(0);
 }
@@ -118,12 +118,12 @@ inline void callback_fn(int n)
 void callback_function(int times)
 {
 	tscb::signal<void (int)> chain;
-	
+
 	int num=ncallbacks;
-	
+
 	while(num--)
 		chain.connect(&callback_fn);
-	
+
 	while(times--)
 		chain(0);
 }
@@ -138,7 +138,7 @@ struct simple_cb {
 void simple_cb(int times)
 {
 	struct simple_cb *cb=0;
-	
+
 	for(int n = 0; n<ncallbacks; n++) {
 		struct simple_cb *tmp = new struct simple_cb;
 		tmp->next = cb;
@@ -157,7 +157,7 @@ void simple_cb(int times)
 void run(void (*function)(int times), const char *description)
 {
 	long times = 128;
-	
+
 	while (1) {
 		start = std::chrono::steady_clock::now();
 		function(times);
@@ -167,11 +167,11 @@ void run(void (*function)(int times), const char *description)
 		}
 		times = times*2;
 	}
-	
+
 	double usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 	double ops = times / usec * 1000000;
 	double nsec = usec / times * 1000;
-	
+
 	printf("%30s: %12.1lf ops/sec %7.1lf nsecs/op\n", description, ops, nsec);
 }
 

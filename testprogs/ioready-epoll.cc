@@ -19,12 +19,12 @@ using namespace tscb;
 int main()
 {
 	ioready_dispatcher_epoll *dispatcher;
-	
+
 	dispatcher=new ioready_dispatcher_epoll();
-	
+
 	test_dispatcher(dispatcher);
 	test_dispatcher_threading(dispatcher);
 	test_dispatcher_sync_disconnect(dispatcher);
-	
+
 	delete dispatcher;
 }

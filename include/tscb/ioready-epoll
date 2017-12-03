@@ -18,23 +18,23 @@
 #include <tscb/file-descriptor-table>
 
 namespace tscb {
-	
+
 	/**
 		\brief Dispatcher for IO readiness events using the
 		<TT>epoll_*</TT> system calls
-		
+
 		This class supports collecting the IO readiness state of
 		a set of file descriptors using the <TT>epoll_*</TT> family of system
 		calls, and dispatching callbacks to receivers that have
 		registered themselves for events on specific file descriptors.
-		
+
 		The <TT>epoll_*</TT> family of system calls provide the fastest
 		possible way to observe the state of a set of file descriptors
 		on Linux systems. Like
 		\ref tscb::ioready_dispatcher_kqueue "ioready_dispatcher_kqueue"
 		all relevant operations are O(1), i.e. independent from
 		the number of descriptors being watched.
-		
+
 		Moreover, the \ref dispatch method can usefully be called from
 		multiple threads.
 	*/
@@ -42,13 +42,13 @@ namespace tscb {
 	public:
 		ioready_dispatcher_epoll(void) /*throw(std::runtime_error)*/;
 		virtual ~ioready_dispatcher_epoll(void) throw();
-		
+
 		virtual size_t dispatch(const std::chrono::steady_clock::duration *timeout, size_t max);
-		
+
 		virtual size_t dispatch_pending(size_t max);
-		
+
 		virtual eventtrigger & get_eventtrigger(void) /*throw(std::runtime_error, std::bad_alloc)*/;
-		
+
 		virtual void register_ioready_callback(ioready_callback *l)
 			/*throw(std::bad_alloc)*/;
 		virtual void unregister_ioready_callback(ioready_callback *e)
@@ -57,26 +57,26 @@ namespace tscb {
 			/*throw(std::bad_alloc)*/;
 	protected:
 		void drain_queue(void) throw();
-		
+
 		void process_events(epoll_event events[], size_t nevents, uint32_t cookie);
-		
+
 		void synchronize(void) throw();
-		
+
 		inline ioready_events translate_os_to_tscb(int ev) throw();
 		inline int translate_tscb_to_os(ioready_events ev) throw();
-		
+
 		int epoll_fd_;
-		
+
 		file_descriptor_table fdtab_;
-		
+
 		std::atomic<pipe_eventflag *> wakeup_flag_;
 		std::mutex singleton_mutex_;
-		
+
 		deferrable_rwlock lock_;
 		friend class read_guard<ioready_dispatcher_epoll>;
 		friend class async_write_guard<ioready_dispatcher_epoll>;
 	};
-	
+
 }
 
 #endif

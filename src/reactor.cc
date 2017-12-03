@@ -9,10 +9,10 @@
 #include <tscb/reactor>
 
 namespace tscb {
-	
+
 	posix_reactor_service::~posix_reactor_service(void) throw()
 	{
 	}
-	
-	
+
+
 };

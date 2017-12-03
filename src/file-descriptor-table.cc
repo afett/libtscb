@@ -11,7 +11,7 @@
 #include <tscb/file-descriptor-table>
 
 namespace tscb {
-	
+
 	/* must be called under read lock */
 	void file_descriptor_table::cancel_all(void) noexcept
 	{
@@ -30,7 +30,7 @@ namespace tscb {
 			}
 		}
 	}
-	
+
 	/* must be called under write lock */
 	void file_descriptor_table::insert(ioready_callback * cb, ioready_events & old_mask, ioready_events & new_mask) /*throw(std::bad_alloc)*/
 	{
@@ -40,7 +40,7 @@ namespace tscb {
 			entry = new file_descriptor_chain;
 			tab->entries_[cb->fd_].store(entry, std::memory_order_relaxed);
 		}
-		
+
 		/* compute old event mask */
 		old_mask = ioready_none;
 		ioready_callback * tmp = entry->active_.load(std::memory_order_relaxed);
@@ -49,23 +49,23 @@ namespace tscb {
 			tmp = tmp->active_next_.load(std::memory_order_relaxed);
 		}
 		new_mask = old_mask | cb->event_mask();
-		
+
 		/* prepare element */
 		cb->prev_ = entry->last_;
 		cb->next_ = nullptr;
 		cb->active_next_.store(nullptr, std::memory_order_relaxed);
-		
+
 		/* we are now going to "publish" this element; since we may be
 		inserting multiple references, just issue a thread fence once
 		and use relaxed memory order */
 		atomic_thread_fence(std::memory_order_release);
-	
+
 		/* add element to active list; find all elements that have been removed
 		from the full list and thus terminate the active list; point them to
 		the newly-added element */
-		
+
 		tmp = entry->last_;
-		
+
 		for (;;) {
 			if (!tmp) {
 				if (entry->active_.load(std::memory_order_relaxed) == 0) {
@@ -79,22 +79,22 @@ namespace tscb {
 			tmp->active_next_.store(cb, std::memory_order_relaxed);
 			tmp = tmp->prev_;
 		}
-		
+
 		if (entry->last_) {
 			entry->last_->next_ = cb;
 		} else {
 			entry->first_ = cb;
 		}
-		
+
 		entry->last_ = cb;
 	}
-	
+
 	/* must be called under write lock */
 	void file_descriptor_table::remove(ioready_callback * cb, ioready_events & old_mask, ioready_events & new_mask) noexcept
 	{
 		volatile_table * tab = table_.load(std::memory_order_relaxed);
 		file_descriptor_chain * entry = tab->entries_[cb->fd_].load(std::memory_order_relaxed);
-		
+
 		/* remove protocol: remove element from active list; we have to make
 		sure that all elements that pointed to "us" within
 		the active chain now point to the following element,
@@ -114,7 +114,7 @@ namespace tscb {
 			tmp->active_next_.store(next, std::memory_order_release);
 			tmp = tmp->prev_;
 		}
-		
+
 		/* compute old event mask */
 		new_mask = ioready_none;
 		tmp = entry->active_.load(std::memory_order_relaxed);
@@ -123,7 +123,7 @@ namespace tscb {
 			tmp = tmp->active_next_.load(std::memory_order_relaxed);
 		}
 		old_mask = new_mask | cb->event_mask();
-		
+
 		/* If this is the last callback registered for this descriptor,
 		then user might be tempted to synchronously close and reuse it;
 		this could lead to a pending event being delivered for the new
@@ -137,12 +137,12 @@ namespace tscb {
 				need_cookie_sync_ = true;
 			}
 		}
-		
+
 		/* put into list of elements marked for deferred cancellation */
 		cb->inactive_next_ = inactive_;
 		inactive_ = cb;
 	}
-	
+
 	/* must be called after read_unlock/write_lock indicates that synchronization
 	is required */
 	ioready_callback * file_descriptor_table::synchronize(void) noexcept
@@ -156,7 +156,7 @@ namespace tscb {
 			delete old;
 			old = next;
 		}
-		
+
 		/* remove inactive callbacks */
 		ioready_callback * link = inactive_;
 		while (link) {
@@ -173,7 +173,7 @@ namespace tscb {
 			}
 			link = link->inactive_next_;
 		}
-		
+
 		if (need_cookie_sync_) {
 			need_cookie_sync_ = false;
 			uint32_t current_cookie = cookie_.load(std::memory_order_relaxed);
@@ -185,14 +185,14 @@ namespace tscb {
 				entry->cookie_.store(current_cookie, std::memory_order_relaxed);
 			}
 		}
-		
+
 		/* return first inactive callback so they can be deallocated
 		outside the lock */
 		link = inactive_;
 		inactive_ = nullptr;
 		return link;
 	}
-		
+
 	file_descriptor_table::volatile_table *
 	file_descriptor_table::get_extend_table_slow(volatile_table * tab, int maxfd) /*throw(std::bad_alloc)*/
 	{
@@ -200,18 +200,18 @@ namespace tscb {
 		if (new_capacity <= (size_t)maxfd) {
 			new_capacity = maxfd + 1;
 		}
-		
+
 		volatile_table * newtab = new volatile_table(new_capacity);
 		for (size_t n = 0; n < tab->capacity_; ++n) {
 			newtab->entries_[n].store(tab->entries_[n].load(std::memory_order_relaxed), std::memory_order_relaxed);
 		}
-		
+
 		newtab->old_ = tab;
-		
+
 		table_.store(newtab, std::memory_order_release);
 		tab = newtab;
-		
+
 		return tab;
 	}
-	
+
 }

@@ -33,11 +33,11 @@ public:
 		link2.disconnect();
 		fflush(stdout);
 	}
-	
+
 	inline void pin(void) {++refcount;}
 	inline void release(void) {--refcount;}
 	int refcount;
-	
+
 	tscb::connection link1, link2;
 };
 
@@ -64,17 +64,17 @@ void callback_tests(void)
 		callbacks are cancellable and that references to target objects
 		are handled correctly */
 		Receiver r;
-		
+
 		r.link1 = chain.connect(std::bind(&Receiver::cbrecv1, tscb::intrusive_ptr<Receiver>(&r), std::placeholders::_1));
 		ASSERT(r.refcount == 2);
 		ASSERT(r.link1.callback_->refcount_ == 2);
-		
+
 		chain(1);
 		ASSERT(result == 1);
-		
+
 		r.link1.disconnect();
 		ASSERT(r.refcount == 1);
-		
+
 		chain(2);
 		ASSERT(result == 1);
 	}
@@ -84,25 +84,25 @@ void callback_tests(void)
 		completed */
 		Receiver r;
 		r.link1 = chain.connect(std::bind(&Receiver::cbrecv2, tscb::intrusive_ptr<Receiver>(&r), std::placeholders::_1));
-		
+
 		chain(3);
 		ASSERT(result == 3);
 		chain(4);
 		ASSERT(result == 3);
-		
+
 		ASSERT(r.refcount == 1);
 	}
 	{
 		/* veriy that callbacks can cancel each other (out of two
 		callbacks that mutually cancel each other, exactly one must be
 		executed) and that reference counting still works as expected */
-		
+
 		Receiver r;
 		r.link1 = chain.connect(std::bind(&Receiver::cbrecv3, tscb::intrusive_ptr<Receiver>(&r), std::placeholders::_1));
 		r.link2 = chain.connect(std::bind(&Receiver::cbrecv3, tscb::intrusive_ptr<Receiver>(&r), std::placeholders::_1));
-		
+
 		chain(5);
-		
+
 		ASSERT(result == 5);
 		ASSERT(called == 1);
 		ASSERT(r.refcount == 1);
@@ -126,11 +126,11 @@ void callback_tests(void)
 		called = 0;
 		result = 0;
 		tscb::connection l = chain.connect(std::bind(fn, std::placeholders::_1));
-		
+
 		chain(1);
 		ASSERT(called == 1);
 		ASSERT(result == 0);
-		
+
 		l.disconnect();
 		chain(1);
 		ASSERT(called == 1);
@@ -141,15 +141,15 @@ void callback_tests(void)
 		tscb::connection link1, link2;
 		link1 = chain.connect(std::bind(fn, std::placeholders::_1));
 		link2 = chain.connect(std::bind(fn, std::placeholders::_1));
-		
+
 		chain(1);
 		ASSERT(called == 2);
-		
+
 		link1.disconnect();
 		called = 0;
 		chain(1);
 		ASSERT(called == 1);
-		
+
 		link2.disconnect();
 	}
 	/* check cancellation of second element in list */
@@ -158,15 +158,15 @@ void callback_tests(void)
 		tscb::connection link1, link2;
 		link1 = chain.connect(std::bind(fn, std::placeholders::_1));
 		link2 = chain.connect(std::bind(fn, std::placeholders::_1));
-		
+
 		chain(1);
 		ASSERT(called == 2);
-		
+
 		link2.disconnect();
 		called = 0;
 		chain(1);
 		ASSERT(called == 1);
-		
+
 		link1.disconnect();
 	}
 }

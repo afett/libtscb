@@ -11,7 +11,7 @@
 #include <tscb/dispatch>
 
 namespace tscb {
-	
+
 	void dispatch(tscb::timerqueue_dispatcher *tq,
 		tscb::ioready_dispatcher * io)
 	{
@@ -24,7 +24,7 @@ namespace tscb {
 			io->dispatch(0);
 			return;
 		}
-		
+
 		std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point t = now;
 		bool pending;
@@ -36,13 +36,13 @@ namespace tscb {
 			}
 			now = std::chrono::steady_clock::now();
 		} while(now >= t);
-		
+
 		if (pending) {
 			std::chrono::steady_clock::duration timeout = t - now;
 			io->dispatch(&timeout);
 		} else io->dispatch(0);
 	}
-	
+
 	posix_reactor::posix_reactor(void)
 		throw(std::bad_alloc, std::runtime_error)
 		: io_(create_ioready_dispatcher()),
@@ -51,12 +51,12 @@ namespace tscb {
 		async_workqueue_(trigger_)
 	{
 	}
-	
+
 	posix_reactor::~posix_reactor(void) noexcept
 	{
 		delete io_;
 	}
-	
+
 	void
 	posix_reactor::post(std::function<void(void)> function) /*throw(std::bad_alloc)*/
 	{
@@ -68,47 +68,47 @@ namespace tscb {
 		}
 		trigger_.set();
 	}
-		
+
 	void posix_reactor::register_timer(timer_callback * cb) noexcept
 	{
 		timer_dispatcher_.register_timer(cb);
 	}
-	
+
 	void posix_reactor::unregister_timer(timer_callback * cb) noexcept
 	{
 		timer_dispatcher_.unregister_timer(cb);
 	}
-	
+
 	void
 	posix_reactor::register_ioready_callback(ioready_callback * cb) /*throw(std::bad_alloc)*/
 	{
 		io_->register_ioready_callback(cb);
 	}
-	
+
 	void
 	posix_reactor::unregister_ioready_callback(ioready_callback * cb) noexcept
 	{
 		io_->unregister_ioready_callback(cb);
 	}
-	
+
 	void
 	posix_reactor::modify_ioready_callback(ioready_callback * cb, ioready_events event_mask) /*throw(std::bad_alloc)*/
 	{
 		io_->modify_ioready_callback(cb, event_mask);
 	}
-	
+
 	async_safe_connection
 	posix_reactor::async_procedure(std::function<void(void)> function)
 	{
 		return async_workqueue_.async_procedure(std::move(function));
 	}
-	
+
 	eventtrigger &
 	posix_reactor::get_eventtrigger(void) /*throw(std::bad_alloc)*/
 	{
 		return trigger_;
 	}
-	
+
 	void
 	posix_reactor::dispatch(void)
 	{
@@ -116,11 +116,11 @@ namespace tscb {
 			std::unique_lock<std::mutex> guard(workqueue_lock_);
 			std::unique_ptr<workitem> item(workqueue_.pop());
 			guard.unlock();
-			
+
 			if (item.get()) {
 				item->function_();
 			}
-			
+
 			guard.lock();
 			if (!workqueue_.empty()) {
 				trigger_.set();
@@ -130,56 +130,56 @@ namespace tscb {
 		async_workqueue_.dispatch();
 		tscb::dispatch(&timer_dispatcher_, io_);
 	}
-	
+
 	bool
 	posix_reactor::dispatch_pending(void)
 	{
 		bool processed_events = false;
-		
+
 		if (__builtin_expect(!workqueue_.empty(), 0)) {
 			std::unique_lock<std::mutex> guard(workqueue_lock_);
 			std::unique_ptr<workitem> item(workqueue_.pop());
 			guard.unlock();
-			
+
 			if (item.get()) {
 				item->function_();
 				processed_events = true;
 			}
-			
+
 			guard.lock();
 			if (!workqueue_.empty()) {
 				trigger_.set();
 			}
 			guard.unlock();
 		}
-		
+
 		if (async_workqueue_.dispatch()) {
 			processed_events = true;
 		}
-		
+
 		std::chrono::steady_clock::time_point first_timer_due;
 		if (__builtin_expect(timer_dispatcher_.next_timer(first_timer_due), false)) {
 			std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-			
+
 			if (first_timer_due <= now) {
 				processed_events = true;
-				
+
 				timer_dispatcher_.run_queue(now);
 			}
 		}
-		
+
 		if (io_->dispatch_pending()) {
 			processed_events = true;
 		}
-		
+
 		return processed_events;
 	}
-	
+
 	void posix_reactor::dispatch_pending_all(void)
 	{
 		while (dispatch_pending()) {
 			/* empty */
 		}
 	}
-	
+
 };

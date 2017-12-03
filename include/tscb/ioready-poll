@@ -18,16 +18,16 @@
 #include <tscb/file-descriptor-table>
 
 namespace tscb {
-	
+
 	/**
 		\brief Dispatcher for IO readiness events using the
 		<TT>poll</TT> system call
-		
+
 		This class supports collecting the IO readiness state of
 		a set of file descriptors using the <TT>poll</TT> system
 		call, and dispatching callbacks to receivers that have
 		registered themselves for events on specific file descriptors.
-		
+
 		The <TT>poll</TT> system call usually performs considerably
 		better than <TT>select</TT>, though it has the same
 		asymptotic behaviour (and is thus not very well-suited for
@@ -37,13 +37,13 @@ namespace tscb {
 	public:
 		ioready_dispatcher_poll(void) /*throw(std::bad_alloc, std::runtime_error)*/;
 		virtual ~ioready_dispatcher_poll(void) noexcept;
-		
+
 		virtual size_t dispatch(const std::chrono::steady_clock::duration *timeout, size_t max);
-		
+
 		virtual size_t dispatch_pending(size_t max);
-		
+
 		virtual eventtrigger & get_eventtrigger(void) noexcept;
-		
+
 		virtual void register_ioready_callback(ioready_callback *l)
 			/* throw(std::bad_alloc) */;
 		virtual void unregister_ioready_callback(ioready_callback *e)
@@ -56,37 +56,37 @@ namespace tscb {
 		public:
 			polltab(size_t size) throw(std::bad_alloc);
 			~polltab(void) noexcept;
-			
+
 			size_t size_;
 			int generation_;
 			struct pollfd * pfd_;
-			
+
 			polltab * old_, * peer_;
 		};
 		/** \endcond */
-		
+
 		void update_polltab_entry(int fd, ioready_events mask) /*throw(std::bad_alloc)*/;
-		
+
 		void synchronize(void) noexcept;
 		inline ioready_events translate_os_to_tscb(int ev) noexcept;
 		inline int translate_tscb_to_os(ioready_events ev) noexcept;
-		
+
 		std::atomic<polltab *> master_ptab_;
 		file_descriptor_table fdtab_;
 		std::vector<int> polltab_index_;
-		
+
 		deferrable_rwlock lock_;
 		friend class read_guard<ioready_dispatcher_poll>;
 		friend class async_write_guard<ioready_dispatcher_poll>;
-		
+
 		pipe_eventflag wakeup_flag_;
-		
+
 		ioready_connection pipe_callback_;
-		
+
 	private:
 		void drain_queue(void) noexcept;
 	};
-	
+
 }
 
 #endif

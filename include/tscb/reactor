@@ -17,41 +17,41 @@
 
 /**
 	\page reactor_descr Reactor interface
-	
+
 	The \ref tscb::posix_reactor_service interface combines the
 	\ref tscb::timer_service, \ref tscb::ioready_service and
 	\ref tscb::workqueue_service interfaces. It is suitable
 	for being used as the basis for event-driven applications
 	that perform actions in reaction to external events.
-	
+
 */
 
 namespace tscb {
-	
+
 	/**
 		\brief Posix reactor service
-		
+
 		Combines the interfaces \ref tscb::workqueue_service "workqueue_service",
 		\ref tscb::timer_service "timer_service" and \ref tscb::ioready_service "ioready_service"
 	*/
 	class posix_reactor_service : public workqueue_service, public timer_service, public ioready_service, public async_safe_work_service {
 	public:
 		virtual ~posix_reactor_service(void) throw();
-		
+
 		virtual eventtrigger & get_eventtrigger(void) = 0;
-		
+
 		/**
 			\brief Event flag to wake up prematurely
-			
+
 			\deprecated Use \ref get_eventtrigger instead
 		*/
 		inline eventflag & get_eventflag(void)
 		{
 			return dynamic_cast<eventflag &>(get_eventtrigger());
 		}
-		
+
 	};
-	
+
 };
 
 #endif

@@ -17,15 +17,15 @@
 #include <tscb/signal>
 
 namespace tscb {
-	
+
 	class childproc_monitor;
-	
+
 	class childproc_callback : public abstract_callback {
 	public:
 		virtual ~childproc_callback(void) noexcept;
-		
+
 		virtual void disconnect(void) noexcept;
-		
+
 		virtual bool connected(void) const noexcept;
 	protected:
 		inline childproc_callback(pid_t pid, const std::function<void(int, const rusage &)> function)
@@ -37,64 +37,64 @@ namespace tscb {
 			, pid_(pid)
 			, function_(function)
 		{}
-		
+
 		mutable std::mutex registration_mutex_;
 		childproc_monitor * service_;
 		childproc_callback * prev_, * next_;
 		std::atomic<childproc_callback *> active_next_;
 		childproc_callback * deferred_cancel_next_;
-		
+
 		pid_t pid_;
 		std::function<void(int, const rusage &)> function_;
-		
+
 		inline void cancelled(void)
 		{
 			function_ = nullptr;
 		}
-		
+
 		friend class childproc_monitor;
 	};
-	
+
 	class childproc_monitor_service {
 	public:
 		virtual ~childproc_monitor_service(void) noexcept;
-		
+
 		virtual connection
 		watch_childproc(std::function<void(int, const rusage &)> function, pid_t pid) = 0;
 	};
-	
+
 	class childproc_monitor : public childproc_monitor_service {
 	public:
 		childproc_monitor(bool reap_all_children = false);
-		
+
 		virtual ~childproc_monitor(void) noexcept;
-		
+
 		virtual connection
 		watch_childproc(std::function<void(int, const rusage &)> function, pid_t pid);
-		
+
 		void
 		dispatch(void);
-		
+
 	protected:
 		void
 		remove(childproc_callback * cb) noexcept;
-		
+
 		void
 		synchronize(void);
-		
+
 		deferrable_rwlock lock_;
 		friend class read_guard<childproc_monitor>;
-		
+
 		bool reap_all_children_;
-		
+
 		std::atomic<childproc_callback *> active_;
 		childproc_callback * first_;
 		childproc_callback * last_;
 		childproc_callback * deferred_cancel_;
-		
+
 		friend class childproc_callback;
 	};
-	
+
 };
 
 #endif

@@ -9,7 +9,7 @@
 #include <tscb/deferred>
 
 namespace tscb {
-	
+
 	bool deferred_rwlock::read_lock_slow(void) throw()
 	{
 		writers_.lock();
@@ -17,16 +17,16 @@ namespace tscb {
 			writers_.unlock();
 			return false;
 		}
-		
+
 		return true;
 	}
-		
+
 	bool deferred_rwlock::read_unlock_slow(void) throw()
 	{
 		writers_.lock();
 		/* note: if another thread obsevers 1->0 transition, it will
 		take the mutex afterwards (and thus serialize with us)
-		
+
 		conversely, a 0->1 transition can only happen with the
 		mutex held; therefore, the acquire/release implicit in
 		the mutex is sufficient to enforce memory ordering here */
@@ -34,10 +34,10 @@ namespace tscb {
 			writers_.unlock();
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	bool deferrable_rwlock::read_lock_slow(void) throw()
 	{
 		writers_.lock();
@@ -51,10 +51,10 @@ namespace tscb {
 			writers_.unlock();
 			return false;
 		}
-		
+
 		return true;
 	}
-		
+
 	bool deferrable_rwlock::read_unlock_slow(void) throw()
 	{
 		writers_.lock();
@@ -66,7 +66,7 @@ namespace tscb {
 		}
 		/* note: if another thread obsevers 1->0 transition, it will
 		take the mutex afterwards (and thus serialize with us)
-		
+
 		conversely, a 0->1 transition can only happen with the
 		mutex held; therefore, the acquire/release implicit in
 		the mutex is sufficient to enforce memory ordering here */
@@ -74,8 +74,8 @@ namespace tscb {
 			writers_.unlock();
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 }
