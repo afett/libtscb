@@ -27,17 +27,11 @@ ifeq ($(DISPATCHER_EPOLL), yes)
   TESTS+=ioready-epoll
 endif
 
-ifeq ($(DISPATCHER_KQUEUE), yes)
-  TESTS+=ioready-kqueue
-endif
-
 testprogs/ioready-poll: testprogs/ioready-poll.o testprogs/ioready-dispatcher.o
 
 testprogs/ioready-epoll: testprogs/ioready-epoll.o testprogs/ioready-dispatcher.o
 
 testprogs/ioready-select: testprogs/ioready-select.o testprogs/ioready-dispatcher.o
-
-testprogs/ioready-kqueue: testprogs/ioready-kqueue.o testprogs/ioready-dispatcher.o
 
 RUNTESTS=$(patsubst %, run-%, $(TESTS))
 

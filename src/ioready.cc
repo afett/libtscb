@@ -56,10 +56,6 @@ namespace tscb {
 	static ioready_dispatcher *
 	create_ioready_dispatcher_probe(void);
 
-	#ifdef HAVE_KQUEUE
-	ioready_dispatcher *
-	create_ioready_dispatcher_kqueue(void) throw(std::bad_alloc, std::runtime_error);
-	#endif
 	#ifdef HAVE_EPOLL
 	ioready_dispatcher *
 	create_ioready_dispatcher_epoll(void);
@@ -79,9 +75,6 @@ namespace tscb {
 		=&create_ioready_dispatcher_probe;
 
 	static ioready_dispatcher_creator_func_t probe_functions[]={
-	#ifdef HAVE_KQUEUE
-		&create_ioready_dispatcher_kqueue,
-	#endif
 	#ifdef HAVE_EPOLL
 		&create_ioready_dispatcher_epoll,
 	#endif

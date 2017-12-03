@@ -63,11 +63,6 @@ AC_DEFINE(HAVE_PIPE2,1,[Check if pipe2 is defined])
 DISPATCHER_EPOLL=yes
 ],[])
 
-AC_CHECK_FUNC(kqueue,[
-AC_DEFINE(HAVE_KQUEUE,1,[Check if kqueue is defined])
-DISPATCHER_KQUEUE=yes
-],[])
-
 # Optional features
 AC_ARG_WITH(fdsetsize,[  --with-fdsetsize=arg    Override FD_SETSIZE (for the nutters who are running Mac OS <10.3)],[
 SELECT_FD_SETSIZE=$withval
@@ -80,7 +75,6 @@ ENABLE_SHARED=yes
 AC_SUBST(DISPATCHER_POLL)
 AC_SUBST(DISPATCHER_SELECT)
 AC_SUBST(DISPATCHER_EPOLL)
-AC_SUBST(DISPATCHER_KQUEUE)
 AC_SUBST(SELECT_FD_SETSIZE)
 AC_SUBST(VERSION)
 AC_SUBST(ENABLE_SHARED)

@@ -203,11 +203,6 @@
 			\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"
 			(available on Linux systems)
 		</LI>
-		<LI>
-			Using the <TT>kqueue</TT> family of system calls:
-			\ref tscb::ioready_dispatcher_kqueue "ioready_dispatcher_kqueue"
-			(available on BSD and derived systems)
-		</LI>
 	</UL>
 
 	The \ref tscb::ioready_dispatcher "ioready_dispatcher" interface adds two
@@ -836,7 +831,6 @@ namespace tscb {
 			platform dynamically; the order of preference is:
 
 			<UL>
-				<LI>\ref tscb::ioready_dispatcher_kqueue "ioready_dispatcher_kqueue"</LI>
 				<LI>\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"</LI>
 				<LI>\ref tscb::ioready_dispatcher_poll "ioready_dispatcher_poll"</LI>
 				<LI>\ref tscb::ioready_dispatcher_select "ioready_dispatcher_select"</LI>
@@ -857,7 +851,6 @@ namespace tscb {
 		platform dynamically; the order of preference is:
 
 		<UL>
-			<LI>\ref tscb::ioready_dispatcher_kqueue "ioready_dispatcher_kqueue"</LI>
 			<LI>\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"</LI>
 			<LI>\ref tscb::ioready_dispatcher_poll "ioready_dispatcher_poll"</LI>
 			<LI>\ref tscb::ioready_dispatcher_select "ioready_dispatcher_select"</LI>

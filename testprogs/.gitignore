@@ -5,7 +5,6 @@ eventflag
 ioready-epoll
 ioready-poll
 ioready-select
-ioready-kqueue
 list
 timer
 fibheap
