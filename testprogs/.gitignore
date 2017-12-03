@@ -4,7 +4,6 @@ deferred
 eventflag
 ioready-epoll
 ioready-poll
-ioready-select
 list
 timer
 fibheap

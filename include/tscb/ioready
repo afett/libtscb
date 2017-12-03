@@ -189,11 +189,6 @@
 
 	<UL>
 		<LI>
-			Using the <TT>select</TT> system call:
-			\ref tscb::ioready_dispatcher_select "ioready_dispatcher_select"
-			(available all Posix systems)
-		</LI>
-		<LI>
 			Using the <TT>poll</TT> system call:
 			\ref tscb::ioready_dispatcher_poll "ioready_dispatcher_poll"
 			(available most Posix systems)
@@ -833,7 +828,6 @@ namespace tscb {
 			<UL>
 				<LI>\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"</LI>
 				<LI>\ref tscb::ioready_dispatcher_poll "ioready_dispatcher_poll"</LI>
-				<LI>\ref tscb::ioready_dispatcher_select "ioready_dispatcher_select"</LI>
 			</UL>
 		*/
 		static
@@ -853,7 +847,6 @@ namespace tscb {
 		<UL>
 			<LI>\ref tscb::ioready_dispatcher_epoll "ioready_dispatcher_epoll"</LI>
 			<LI>\ref tscb::ioready_dispatcher_poll "ioready_dispatcher_poll"</LI>
-			<LI>\ref tscb::ioready_dispatcher_select "ioready_dispatcher_select"</LI>
 		</UL>
 	*/
 	ioready_dispatcher *

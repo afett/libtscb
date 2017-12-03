@@ -64,10 +64,6 @@ namespace tscb {
 	ioready_dispatcher *
 	create_ioready_dispatcher_poll(void);
 	#endif
-	#ifdef HAVE_SELECT
-	ioready_dispatcher *
-	create_ioready_dispatcher_select(void) throw(std::bad_alloc, std::runtime_error);
-	#endif
 
 	typedef ioready_dispatcher *(*ioready_dispatcher_creator_func_t)(void);
 
@@ -80,9 +76,6 @@ namespace tscb {
 	#endif
 	#ifdef HAVE_POLL
 		&create_ioready_dispatcher_poll,
-	#endif
-	#ifdef HAVE_SELECT
-		&create_ioready_dispatcher_select,
 	#endif
 		0
 	};

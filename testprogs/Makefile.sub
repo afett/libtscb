@@ -19,10 +19,6 @@ ifeq ($(DISPATCHER_POLL), yes)
   TESTS+=ioready-poll
 endif
 
-ifeq ($(DISPATCHER_SELECT), yes)
-  TESTS+=ioready-select
-endif
-
 ifeq ($(DISPATCHER_EPOLL), yes)
   TESTS+=ioready-epoll
 endif
@@ -30,8 +26,6 @@ endif
 testprogs/ioready-poll: testprogs/ioready-poll.o testprogs/ioready-dispatcher.o
 
 testprogs/ioready-epoll: testprogs/ioready-epoll.o testprogs/ioready-dispatcher.o
-
-testprogs/ioready-select: testprogs/ioready-select.o testprogs/ioready-dispatcher.o
 
 RUNTESTS=$(patsubst %, run-%, $(TESTS))
 
