@@ -65,6 +65,10 @@ namespace tscb {
 			ioready_events mask = ioready_none;
 			
 			volatile_table * tab = table_.load(std::memory_order_relaxed);
+			if (fd < 0 || size_t(fd) >= tab->capacity_) {
+				return mask;
+			}
+
 			file_descriptor_chain * entry = tab->entries_[fd].load(std::memory_order_relaxed);
 			
 			if (!entry) {
@@ -87,8 +91,9 @@ namespace tscb {
 		inline void notify(int fd, ioready_events events, uint32_t call_cookie)
 		{
 			volatile_table * tab = table_.load(std::memory_order_consume);
-			if ((size_t)fd >= tab->capacity_)
+			if (fd < 0 || size_t(fd) >= tab->capacity_) {
 				return;
+			}
 			
 			file_descriptor_chain * entry = tab->entries_[fd].load(std::memory_order_consume);
 			if (!entry) {
