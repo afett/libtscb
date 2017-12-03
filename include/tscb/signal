@@ -295,7 +295,6 @@
 #include <functional>
 
 #include <tscb/deferred>
-#include <tscb/compiler>
 #include <tscb/intrusive_ptr>
 
 namespace tscb {

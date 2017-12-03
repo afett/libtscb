@@ -13,8 +13,6 @@
 #include <condition_variable>
 #include <mutex>
 
-#include <tscb/compiler>
-
 /**
 	\page deferred_descr Deferred synchronization
 
