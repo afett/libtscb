@@ -637,12 +637,12 @@ namespace tscb {
 			with the given arguments.
 		*/
 		template<typename... Args>
-		inline void operator()(Args... args)
+		inline void operator()(Args&&... args)
 		{
 			read_guard<signal<Signature> > guard(*this);
 			callback_type * l = active_.load(std::memory_order_consume);
 			while(l) {
-				l->function_(args...);
+				l->function_(std::forward<Args>(args)...);
 				l = l->active_next_.load(std::memory_order_consume);
 			}
 		}
