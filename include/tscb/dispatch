@@ -286,6 +286,6 @@ namespace tscb {
 
 		async_safe_work_dispatcher async_workqueue_;
 	};
-};
+}
 
 #endif

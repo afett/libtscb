@@ -274,6 +274,6 @@ namespace tscb {
 		service_->trigger_.set();
 	}
 
-};
+}
 
 #endif

@@ -95,6 +95,6 @@ namespace tscb {
 		friend class childproc_callback;
 	};
 
-};
+}
 
 #endif

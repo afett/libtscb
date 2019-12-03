@@ -45,6 +45,6 @@ namespace tscb {
 		void post(std::function<void(void)> function) /*throw(std::bad_alloc)*/ = 0;
 	};
 
-};
+}
 
 #endif

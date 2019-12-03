@@ -16,4 +16,4 @@ namespace tscb {
 	{
 	}
 
-}; /* namespace callback */
+} /* namespace callback */
