@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define panic(x...) \
+#define panic(...) \
 do {\
-        fprintf(stderr, x);\
+        fprintf(stderr, __VA_ARGS__);\
         abort();\
 } while(0)
 
