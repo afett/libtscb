@@ -59,7 +59,7 @@ void my_release(void *)
 class X {
 public:
 	X(void) : refcount(1) {}
-	bool fn(long long &t) {return false;}
+	bool fn(long long &) {return false;}
 	void pin(void) {refcount++;}
 	void release(void) {refcount--;}
 
@@ -71,7 +71,7 @@ static inline void intrusive_ptr_release(X *x) {x->release();}
 class Y {
 public:
 	Y(void) : refcount(1) {}
-	bool fn(long long &t) {timer_link.disconnect(); return false;}
+	bool fn(long long &) {timer_link.disconnect(); return false;}
 	void pin(void) {refcount++;}
 	void release(void) {refcount--;}
 
