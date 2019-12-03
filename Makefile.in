@@ -26,7 +26,7 @@ CXX = @CXX@
 YACC = @YACC@
 FLEX = flex
 CPPFLAGS = -Iinclude @CPPFLAGS@
-CXXFLAGS = --std=c++11 -Wall -Wextra -pedantic -Werror @CXXFLAGS@ @PTHREAD_CFLAGS@
+CXXFLAGS = -fPIC --std=c++11 -Wall -Wextra -pedantic -Werror @CXXFLAGS@ @PTHREAD_CFLAGS@
 LDFLAGS = @LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS = @LIBS@ @PTHREAD_LIBS@
 INSTALL = @INSTALL@
