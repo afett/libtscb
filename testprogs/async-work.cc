@@ -129,7 +129,7 @@ void test_dispatch_throw(void)
 		async.dispatch();
 		assert(false);
 	}
-	catch (std::runtime_error) {
+	catch (std::runtime_error const&) {
 	}
 
 	/* first must have been processed, other must remain pending;
@@ -144,7 +144,7 @@ void test_dispatch_throw(void)
 		async.dispatch();
 		assert(false);
 	}
-	catch(std::runtime_error) {
+	catch(std::runtime_error const&) {
 	}
 
 	/* second must have been processed; nothing pending anymore */

@@ -168,7 +168,7 @@ void test_throwing_handler(void)
 		m.dispatch();
 		assert(false);
 	}
-	catch(std::runtime_error) {
+	catch(std::runtime_error const&) {
 	}
 
 	assert(called_count == 1);
@@ -177,7 +177,7 @@ void test_throwing_handler(void)
 		m.dispatch();
 		assert(false);
 	}
-	catch(std::runtime_error) {
+	catch(std::runtime_error const&) {
 	}
 
 	assert(called_count == 2);
