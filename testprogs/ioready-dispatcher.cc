@@ -19,7 +19,7 @@
 
 using namespace tscb;
 
-void function(int *closure, int fd, int event)
+void function(int *closure, int fd, int)
 {
 	char c;
 	::read(fd, &c, 1);
@@ -29,7 +29,7 @@ void function(int *closure, int fd, int event)
 class Target {
 public:
 	Target(void) : called(false) {}
-	void function(int event)
+	void function(int)
 	{
 		called = true;
 	}
@@ -50,7 +50,7 @@ public:
 		ASSERT(refcount == 2);
 	}
 
-	void input(int fd, int event)
+	void input(int fd, int)
 	{
 		char c;
 		read(fd, &c, 1);

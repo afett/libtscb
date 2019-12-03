@@ -17,13 +17,13 @@
 
 #include <tscb/dispatch>
 
-static bool dummy_timer(int * what, std::chrono::steady_clock::time_point & now)
+static bool dummy_timer(int * what, std::chrono::steady_clock::time_point &)
 {
 	(*what) ++;
 	return false;
 }
 
-static void dummy_reader(int * what, int fd, tscb::ioready_events events)
+static void dummy_reader(int * what, int fd, tscb::ioready_events)
 {
 	char tmp;
 	read(fd, &tmp, 1);
