@@ -162,10 +162,12 @@ namespace tscb {
 	}
 
 	platform_eventflag::platform_eventflag(void) noexcept
-		: mutex_((pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER),
-		cond_((pthread_cond_t)PTHREAD_COND_INITIALIZER),
+		: mutex_(),
+		cond_(),
 		flagged_(false)
 	{
+		pthread_mutex_init(&mutex_, nullptr);
+		pthread_cond_init(&cond_, nullptr);
 	}
 
 	platform_eventflag::~platform_eventflag(void) noexcept
