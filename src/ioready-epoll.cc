@@ -206,12 +206,12 @@ namespace tscb {
 				},
 				flag->readfd_, ioready_input);
 		}
-		catch (std::bad_alloc) {
+		catch (std::bad_alloc const&) {
 			delete flag;
 			singleton_mutex_.unlock();
 			throw;
 		}
-		catch (std::runtime_error) {
+		catch (std::runtime_error const&) {
 			delete flag;
 			singleton_mutex_.unlock();
 			throw;
@@ -246,7 +246,7 @@ namespace tscb {
 		try {
 			fdtab_.insert(link, old_mask, new_mask);
 		}
-		catch (std::bad_alloc) {
+		catch (std::bad_alloc const&) {
 			delete link;
 			throw;
 		}

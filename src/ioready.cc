@@ -104,7 +104,7 @@ namespace tscb {
 			try {
 				dispatcher=(*func)();
 			}
-			catch(std::runtime_error) {
+			catch(std::runtime_error const&) {
 				n++;
 				continue;
 			}
