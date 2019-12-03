@@ -322,12 +322,12 @@ namespace tscb {
 			int count=0;
 			do {
 				if (!le(*current, *tmp)) {
-					fprintf(stderr, "%p > %p\n", current, tmp);
+					fprintf(stderr, "%p > %p\n", static_cast<void*>(current), static_cast<void*>(tmp));
 					abort();
 				}
 				if (tmp->*child) {
 					if (!le(*tmp, *(tmp->*child))) {
-						fprintf(stderr, "%p > %p (child) \n", current, tmp);
+						fprintf(stderr, "%p > %p (child) \n", static_cast<void*>(current), static_cast<void*>(tmp));
 						abort();
 					}
 					assert_structure_recursive(tmp->*child, tmp->*degree);
@@ -337,7 +337,7 @@ namespace tscb {
 			} while(tmp!=current);
 
 			if (_degree!=count) {
-				fprintf(stderr, "%p: degree=%d, count=%d\n", current, _degree, count);
+				fprintf(stderr, "%p: degree=%d, count=%d\n", static_cast<void*>(current), _degree, count);
 				abort();
 			}
 		}
