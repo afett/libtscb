@@ -54,7 +54,7 @@ namespace tscb {
 	}
 
 	static ioready_dispatcher *
-	create_ioready_dispatcher_probe(void) throw(std::bad_alloc, std::runtime_error);
+	create_ioready_dispatcher_probe(void);
 
 	#ifdef HAVE_KQUEUE
 	ioready_dispatcher *
@@ -62,11 +62,11 @@ namespace tscb {
 	#endif
 	#ifdef HAVE_EPOLL
 	ioready_dispatcher *
-	create_ioready_dispatcher_epoll(void) throw(std::bad_alloc, std::runtime_error);
+	create_ioready_dispatcher_epoll(void);
 	#endif
 	#ifdef HAVE_POLL
 	ioready_dispatcher *
-	create_ioready_dispatcher_poll(void) throw(std::bad_alloc, std::runtime_error);
+	create_ioready_dispatcher_poll(void);
 	#endif
 	#ifdef HAVE_SELECT
 	ioready_dispatcher *
@@ -95,7 +95,7 @@ namespace tscb {
 	};
 
 	ioready_dispatcher *
-	create_ioready_dispatcher_probe(void) throw(std::bad_alloc, std::runtime_error)
+	create_ioready_dispatcher_probe(void)
 	{
 		size_t n=0;
 		while(true) {

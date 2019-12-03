@@ -28,7 +28,7 @@ namespace tscb {
 	}
 
 
-	pipe_eventflag::pipe_eventflag(void) throw(std::runtime_error)
+	pipe_eventflag::pipe_eventflag(void)
 		: flagged_(0), waiting_(0)
 	{
 		int filedes[2];

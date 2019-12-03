@@ -44,7 +44,6 @@ namespace tscb {
 	}
 
 	posix_reactor::posix_reactor(void)
-		throw(std::bad_alloc, std::runtime_error)
 		: io_(create_ioready_dispatcher()),
 		trigger_(io_->get_eventtrigger()),
 		timer_dispatcher_(trigger_),

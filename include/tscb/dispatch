@@ -142,7 +142,7 @@ namespace tscb {
 	*/
 	class posix_reactor : public posix_reactor_service {
 	public:
-		posix_reactor(void) throw(std::bad_alloc, std::runtime_error);
+		posix_reactor(void);
 		virtual ~posix_reactor(void) noexcept;
 
 		/**

@@ -532,7 +532,7 @@ namespace tscb {
 	class signal_callback : public abstract_callback {
 	public:
 		/** \internal \brief Instantiate callback link */
-		signal_callback(std::function<Signature> function) throw(std::bad_alloc)
+		signal_callback(std::function<Signature> function)
 			: function_(function), active_next_(nullptr), prev_(nullptr), next_(nullptr), chain_(nullptr)
 		{}
 		virtual ~signal_callback(void) noexcept
@@ -601,7 +601,7 @@ namespace tscb {
 		*/
 		virtual
 		connection
-		connect(std::function<Signature> function) throw(std::bad_alloc)=0;
+		connect(std::function<Signature> function) = 0;
 	};
 
 	/**
@@ -623,7 +623,7 @@ namespace tscb {
 
 		virtual
 		connection
-		connect(std::function<Signature> function) throw(std::bad_alloc)
+		connect(std::function<Signature> function)
 		{
 			callback_type * l = new callback_type(std::move(function));
 			push_back(l);

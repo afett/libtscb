@@ -533,7 +533,7 @@ namespace tscb {
 			will be called again at the new point in time.
 		*/
 		abstract_timer_connection<Timeval>
-		timer(std::function<bool (Timeval &)> function, Timeval expires) throw(std::bad_alloc)
+		timer(std::function<bool (Timeval &)> function, Timeval expires)
 		{
 			abstract_timer_callback<Timeval> * link;
 			link = new abstract_timer_callback<Timeval>(std::move(function), expires);

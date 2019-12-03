@@ -101,7 +101,7 @@ namespace tscb {
 	class pipe_eventflag : public eventflag {
 	public:
 		/** \brief Instantiate event flag, using a pair of pipes */
-		pipe_eventflag(void) throw(std::runtime_error);
+		pipe_eventflag(void);
 		virtual ~pipe_eventflag(void) noexcept;
 
 		virtual void set(void) noexcept;
