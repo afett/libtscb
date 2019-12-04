@@ -9,13 +9,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/poll.h>
 
 #include <tscb/config>
-
-#ifdef HAVE_POLL
-#include <sys/poll.h>
-#endif
-
 #include <tscb/eventflag>
 
 namespace tscb {
@@ -115,7 +111,6 @@ namespace tscb {
 		start_waiting();
 
 		if (flagged_.load(std::memory_order_acquire) == 0) {
-			#ifdef HAVE_POLL
 			struct pollfd pfd;
 			pfd.fd = readfd_;
 			pfd.events = POLLIN;
@@ -123,13 +118,6 @@ namespace tscb {
 				poll(&pfd, 1, -1);
 				if (pfd.revents & POLLIN) break;
 			}
-			#else
-			/* old OS X do not have poll -- pretty dumb, but
-			have to comply, so just read and re-inject token */
-			char c;
-			read(readfd_, &c, 1);
-			write(writefd_, &c, 1);
-			#endif
 		}
 
 		stop_waiting();
