@@ -26,7 +26,7 @@ static bool dummy_timer(int * what, std::chrono::steady_clock::time_point &)
 static void dummy_reader(int * what, int fd, tscb::ioready_events)
 {
 	char tmp;
-	read(fd, &tmp, 1);
+	assert(read(fd, &tmp, 1) != -1);
 	(*what) ++;
 }
 
@@ -52,13 +52,13 @@ void test_basic_operation(void)
 	{
 		int fds[2];
 		int reader_called = 0;
-		pipe(fds);
+		assert(pipe(fds) != -1);
 		tscb::connection c = reactor.watch(std::bind(dummy_reader, &reader_called, fds[0], std::placeholders::_1), fds[0], tscb::ioready_input);
 		reactor.get_eventtrigger().set();
 		reactor.dispatch();
 		assert(!reader_called);
 
-		write(fds[1], "x", 1);
+		assert(write(fds[1], "x", 1) != -1);
 		reactor.get_eventtrigger().set();
 		reactor.dispatch();
 		assert(reader_called);
@@ -130,7 +130,7 @@ void test_pending(void)
 	{
 		int fds[2];
 		int reader_called = 0;
-		pipe(fds);
+		assert(pipe(fds) != -1);
 		tscb::connection c = reactor.watch(std::bind(dummy_reader, &reader_called, fds[0], std::placeholders::_1), fds[0], tscb::ioready_input);
 
 		/* registering a new event source may as a side effect cause
@@ -139,7 +139,7 @@ void test_pending(void)
 
 		assert(!reader_called);
 
-		write(fds[1], "x", 1);
+		assert(write(fds[1], "x", 1) != -1);
 
 		assert(reactor.dispatch_pending());
 

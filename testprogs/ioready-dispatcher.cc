@@ -11,6 +11,7 @@
 
 #include "tests.h"
 
+#include <assert.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -22,7 +23,7 @@ using namespace tscb;
 void function(int *closure, int fd, int)
 {
 	char c;
-	::read(fd, &c, 1);
+	assert(::read(fd, &c, 1) != -1);
 	*closure = 1;
 }
 
@@ -53,7 +54,7 @@ public:
 	void input(int fd, int)
 	{
 		char c;
-		read(fd, &c, 1);
+		assert(read(fd, &c, 1) != -1);
 		called = true;
 		link.disconnect();
 		ASSERT(refcount == 2);
@@ -109,14 +110,14 @@ void test_dispatcher(ioready_dispatcher *d)
 		int count=d->dispatch(&t);
 		ASSERT(count == 0);
 
-		write(pipefd[1], &count, 1);
+		assert(write(pipefd[1], &count, 1) != -1);
 		count=d->dispatch(&t);
 		ASSERT(count == 1);
 		ASSERT(called == 1);
 
 		called = 0;
 		link.modify(ioready_none);
-		write(pipefd[1], &count, 1);
+		assert(write(pipefd[1], &count, 1) != -1);
 		count=d->dispatch(&t);
 		ASSERT(count == 0);
 		ASSERT(called == 0);
@@ -127,7 +128,7 @@ void test_dispatcher(ioready_dispatcher *d)
 		ASSERT(count == 1);
 		ASSERT(called == 1);
 
-		write(pipefd[1], &count, 1);
+		assert(write(pipefd[1], &count, 1) != -1);
 		called = 0;
 		tscb::intrusive_ptr<ioready_callback> cb(link.callback_);
 		link.disconnect();
@@ -152,7 +153,7 @@ void test_dispatcher(ioready_dispatcher *d)
 			pipefd[0], ioready_input);
 
 		int count;
-		write(pipefd[1], &count, 1);
+		assert(write(pipefd[1], &count, 1) != -1);
 		count=d->dispatch(&t);
 		ASSERT(count == 1);
 		ASSERT(target.called == 1);
@@ -175,13 +176,13 @@ void test_dispatcher(ioready_dispatcher *d)
 		Target2 target(d, pipefd[0]);
 
 		int count;
-		write(pipefd[1], &count, 1);
+		assert(write(pipefd[1], &count, 1) != -1);
 		count=d->dispatch(&t);
 		ASSERT(count == 1);
 		ASSERT(target.called == 1);
 		ASSERT(target.refcount == 1);
 
-		write(pipefd[1], &count, 1);
+		assert(write(pipefd[1], &count, 1) != -1);
 		count=d->dispatch(&t);
 		ASSERT(count == 0);
 
@@ -202,7 +203,7 @@ public:
 		ASSERT((events & ioready_hangup) != 0);
 		conn.disconnect();
 		close(pipe1[0]);
-		dup2(pipe2[0], pipe1[0]);
+		assert(dup2(pipe2[0], pipe1[0]) != -1);
 		conn = d->watch(std::bind(&pipe_swapper::handle_pipe2, this, std::placeholders::_1), pipe1[0], ioready_input);
 	}
 
@@ -230,16 +231,16 @@ void test_dispatcher_sync_disconnect(ioready_dispatcher * d)
 {
 	pipe_swapper sw;
 
-	pipe(sw.pipe1);
+	assert(pipe(sw.pipe1) != -1);
 	fcntl(sw.pipe1[0], F_SETFL, O_NONBLOCK);
-	pipe(sw.pipe2);
+	assert(pipe(sw.pipe2) != -1);
 	fcntl(sw.pipe2[0], F_SETFL, O_NONBLOCK);
 	sw.d = d;
 	sw.conn = d->watch(std::bind(&pipe_swapper::handle_pipe1, &sw, std::placeholders::_1), sw.pipe1[0], ioready_input);
 	sw.finished = false;
 
 	char c = 0;
-	write(sw.pipe2[1], &c, 1);
+	assert(write(sw.pipe2[1], &c, 1) != -1);
 	close(sw.pipe1[1]);
 
 	while (!sw.finished) {
@@ -287,7 +288,7 @@ void test_dispatcher_threading(ioready_dispatcher * d)
 		tscb::ioready_connection link = d->watch(std::bind(function, &called, pipefd[0], std::placeholders::_1),
 			pipefd[0], ioready_input);
 
-		write(pipefd[1], &called, 1);
+		assert(write(pipefd[1], &called, 1) != -1);
 
 		usleep(10*1000);
 
