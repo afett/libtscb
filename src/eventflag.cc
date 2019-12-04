@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <tscb/config>
 
@@ -91,7 +92,10 @@ namespace tscb {
 		}
 
 		char c = 0;
-		write(writefd_, &c, 1);
+		int res;
+		do {
+			res = write(writefd_, &c, 1);
+		} while (res == -1 && errno == EAGAIN);
 	}
 
 	void pipe_eventflag::start_waiting(void) noexcept
@@ -158,7 +162,10 @@ namespace tscb {
 		/* a wakeup has been sent the last time the flag was raised;
 		clear the control pipe */
 		char c;
-		read(readfd_, &c, 1);
+		int res;
+		do {
+			res = read(readfd_, &c, 1);
+		} while (res == -1 && errno == EAGAIN);
 	}
 
 	platform_eventflag::platform_eventflag(void) noexcept
