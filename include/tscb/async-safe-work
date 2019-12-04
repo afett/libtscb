@@ -14,8 +14,6 @@
 
 */
 
-#include <list>
-
 #include <tscb/eventflag>
 #include <tscb/signal>
 
