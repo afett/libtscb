@@ -6,9 +6,6 @@
  * Refer to the file "COPYING" for details.
  */
 
-#define private public
-#define protected public
-
 #include "tests.h"
 
 #include <tscb/ioready>

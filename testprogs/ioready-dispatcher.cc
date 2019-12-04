@@ -6,9 +6,6 @@
  * Refer to the file "COPYING" for details.
  */
 
-#define private public
-#define protected public
-
 #include "tests.h"
 
 #include <assert.h>
@@ -16,6 +13,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#define _LIBTSCB_CALLBACK_UNITTESTS 1
 #include <tscb/ioready>
 
 using namespace tscb;

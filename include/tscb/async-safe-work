@@ -41,6 +41,9 @@ namespace tscb {
 		trigger(void) noexcept;
 
 	protected:
+#ifdef _LIBTSCB_CALLBACK_UNITTESTS
+	public:
+#endif
 		inline async_safe_callback(std::function<void(void)> function, async_safe_work_dispatcher * service)
 			: function_(std::move(function))
 			, activation_flag_(false)
@@ -235,6 +238,9 @@ namespace tscb {
 		dispatch(void);
 
 	protected:
+#ifdef _LIBTSCB_CALLBACK_UNITTESTS
+	public:
+#endif
 		/** \internal \brief Singly-linked list of pending async procedures */
 		std::atomic<async_safe_callback *> pending_;
 

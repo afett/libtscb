@@ -6,9 +6,7 @@
  * Refer to the file "COPYING" for details.
  */
 
-#define private public
-#define protected public
-
+#define _LIBTSCB_CALLBACK_UNITTESTS 1
 #include <tscb/timer>
 #include <tscb/eventflag>
 #include "tests.h"

@@ -6,12 +6,10 @@
  * Refer to the file "COPYING" for details.
  */
 
-#define private public
-#define protected public
-
 #include <assert.h>
 #include <pthread.h>
 
+#define _LIBTSCB_CALLBACK_UNITTESTS 1
 #include <tscb/async-safe-work>
 
 std::atomic<int> called_count(0);

@@ -430,6 +430,9 @@ namespace tscb {
 		}
 
 	private:
+#ifdef _LIBTSCB_CALLBACK_UNITTESTS
+	public:
+#endif
 		friend class connection;
 
 		callback_type * callback_;

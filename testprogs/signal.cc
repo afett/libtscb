@@ -6,8 +6,6 @@
  * Refer to the file "COPYING" for details.
  */
 
-#define private public
-
 #define _LIBTSCB_CALLBACK_UNITTESTS 1
 #include <tscb/signal>
 #include "tests.h"

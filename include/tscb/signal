@@ -473,6 +473,9 @@ namespace tscb {
 		}
 
 	private:
+#ifdef _LIBTSCB_CALLBACK_UNITTESTS
+	public:
+#endif
 		abstract_callback * callback_;
 	};
 

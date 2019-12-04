@@ -563,6 +563,9 @@ namespace tscb {
 		}
 
 	private:
+#ifdef _LIBTSCB_CALLBACK_UNITTESTS
+	public:
+#endif
 		friend class connection;
 
 		ioready_callback * callback_;
