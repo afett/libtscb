@@ -13,7 +13,6 @@
 #include <sys/fcntl.h>
 #include <sys/epoll.h>
 
-#include <tscb/config>
 #include <cassert>
 
 namespace tscb {
@@ -38,20 +37,13 @@ namespace tscb {
 	}
 
 	ioready_dispatcher_epoll::ioready_dispatcher_epoll(void)
-		/* throw(std::runtime_error) */
-		: wakeup_flag_(nullptr)
+		:
+			epoll_fd_(::epoll_create1(EPOLL_CLOEXEC)),
+			wakeup_flag_(nullptr)
 	{
-#if defined(HAVE_EPOLL1) && defined(EPOLL_CLOEXEC)
-		epoll_fd_ = ::epoll_create1(EPOLL_CLOEXEC);
-		if (epoll_fd_ >= 0) {
-			return;
-		}
-#endif
-		epoll_fd_ = ::epoll_create(1024);
 		if (epoll_fd_ < 0) {
 			throw std::runtime_error("Unable to create epoll descriptor");
 		}
-		::fcntl(epoll_fd_, F_SETFL, O_CLOEXEC);
 	}
 
 	ioready_dispatcher_epoll::~ioready_dispatcher_epoll(void) noexcept
