@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <sys/poll.h>
 
-#include <tscb/config>
 #include <tscb/eventflag>
 
 namespace tscb {
@@ -29,19 +28,8 @@ namespace tscb {
 		: flagged_(0), waiting_(0)
 	{
 		int filedes[2];
-		int error = -1;
 
-#ifdef HAVE_PIPE2
-		error = ::pipe2(filedes, O_CLOEXEC);
-#endif
-		if (error) {
-			error = ::pipe(filedes);
-			if (error == 0) {
-				::fcntl(filedes[0], F_SETFL, O_CLOEXEC);
-				::fcntl(filedes[1], F_SETFL, O_CLOEXEC);
-			}
-		}
-
+		auto error = ::pipe2(filedes, O_CLOEXEC);
 		if (error) {
 			throw std::runtime_error("Unable to create control pipe");
 		}
