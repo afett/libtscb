@@ -1,3 +1,6 @@
+#include <sys/resource.h>
+#include <sys/wait.h>
+
 #include <tscb/childproc-monitor>
 
 namespace tscb {

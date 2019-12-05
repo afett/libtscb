@@ -7,6 +7,8 @@
  */
 
 #include <assert.h>
+#include <signal.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <tscb/childproc-monitor>

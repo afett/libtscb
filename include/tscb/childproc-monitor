@@ -9,12 +9,11 @@
 #ifndef TSCB_CHILDPROC_MONITOR_H
 #define TSCB_CHILDPROC_MONITOR_H
 
-#include <sys/resource.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #include <tscb/signal>
+
+struct rusage;
 
 namespace tscb {
 
