@@ -9,8 +9,6 @@
 #ifndef TSCB_IOREADY_EPOLL_H
 #define TSCB_IOREADY_EPOLL_H
 
-#include <vector>
-
 #include <sys/epoll.h>
 
 #include <tscb/ioready>
