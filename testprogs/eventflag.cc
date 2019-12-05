@@ -8,8 +8,7 @@
 
 #include "tests.h"
 
-#include <tscb/ioready>
-#include <pthread.h>
+#include <tscb/eventflag>
 
 void test_pipe_eventflag(void)
 {

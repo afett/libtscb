@@ -7,7 +7,6 @@
  */
 
 #include <assert.h>
-#include <pthread.h>
 #include <unistd.h>
 
 #include <tscb/childproc-monitor>
