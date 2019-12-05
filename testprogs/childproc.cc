@@ -53,21 +53,21 @@ public:
 		sigset_t sigset;
 		sigemptyset(&sigset);
 		sigaddset(&sigset, SIGCHLD);
-		sigprocmask(SIG_BLOCK, &sigset, NULL);
+		sigprocmask(SIG_BLOCK, &sigset, nullptr);
 	}
 	~sigchld_guard(void)
 	{
 		sigset_t sigset;
 		sigemptyset(&sigset);
 		sigaddset(&sigset, SIGCHLD);
-		sigprocmask(SIG_BLOCK, &sigset, NULL);
+		sigprocmask(SIG_BLOCK, &sigset, nullptr);
 	}
 	void wait(void)
 	{
 		sigset_t sigset;
 		sigemptyset(&sigset);
 		sigaddset(&sigset, SIGCHLD);
-		sigwaitinfo(&sigset, NULL);
+		sigwaitinfo(&sigset, nullptr);
 	}
 };
 
