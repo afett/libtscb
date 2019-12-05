@@ -9,7 +9,7 @@
 #ifndef TSCB_FILE_DESCRIPTOR_TABLE_H
 #define TSCB_FILE_DESCRIPTOR_TABLE_H
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <tscb/ioready>
 
