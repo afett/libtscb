@@ -9,8 +9,6 @@
 #ifndef TSCB_TIMER_H
 #define TSCB_TIMER_H
 
-#include <mutex>
-
 /**
 	\page timer_descr Timer callbacks
 
@@ -210,14 +208,11 @@
 */
 
 #include <chrono>
-#include <new>
+#include <mutex>
 
 #include <tscb/signal>
 #include <tscb/eventflag>
 #include <tscb/fibheap>
-
-#include <sys/time.h>
-#include <time.h>
 
 namespace tscb {
 
