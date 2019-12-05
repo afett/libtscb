@@ -36,8 +36,7 @@
 	priority queues, and are also commonly used in graph algorithms.
 */
 
-#include <string.h>
-
+#include <array>
 #include <functional>
 
 namespace tscb {
@@ -352,8 +351,8 @@ namespace tscb {
 
 		inline void rebalance(void)
 		{
-			Node *collision[64], *current, *tmp, *other, *minimum;
-			memset(collision, 0, sizeof(Node *)*64);
+			auto collision = std::array<Node*, 64>{};
+			Node *current, *tmp, *other, *minimum;
 
 			int count=root_degree;
 			current=root;
