@@ -11,9 +11,6 @@
 
 #include <atomic>
 
-#include <stdexcept>
-#include <pthread.h>
-
 namespace tscb {
 
 	/**
@@ -129,22 +126,6 @@ namespace tscb {
 		/** \internal \brief Number of threads waiting */
 		std::atomic<size_t> waiting_;
 	};
-
-	/** \cond NEVER -- ignored by doxygen */
-	class platform_eventflag : public eventflag {
-	public:
-		platform_eventflag(void) noexcept;
-		virtual ~platform_eventflag(void) noexcept;
-
-		virtual void set(void) noexcept;
-		virtual void wait(void) noexcept;
-		virtual void clear(void) noexcept;
-	private:
-		pthread_mutex_t mutex_;
-		pthread_cond_t cond_;
-		bool flagged_;
-	};
-	/** \endcond */
 
 }
 

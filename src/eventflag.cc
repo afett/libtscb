@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <sys/poll.h>
 
+#include <stdexcept>
+
 #include <tscb/eventflag>
 
 namespace tscb {
@@ -142,43 +144,6 @@ namespace tscb {
 		do {
 			res = read(readfd_, &c, 1);
 		} while (res == -1 && errno == EAGAIN);
-	}
-
-	platform_eventflag::platform_eventflag(void) noexcept
-		: mutex_(),
-		cond_(),
-		flagged_(false)
-	{
-		pthread_mutex_init(&mutex_, nullptr);
-		pthread_cond_init(&cond_, nullptr);
-	}
-
-	platform_eventflag::~platform_eventflag(void) noexcept
-	{
-	}
-
-	void platform_eventflag::set(void) noexcept
-	{
-		pthread_mutex_lock(&mutex_);
-		flagged_ = true;
-		pthread_cond_broadcast(&cond_);
-		pthread_mutex_unlock(&mutex_);
-	}
-
-	void platform_eventflag::wait(void) noexcept
-	{
-		pthread_mutex_lock(&mutex_);
-		while (!flagged_) {
-			pthread_cond_wait(&cond_, &mutex_);
-		}
-		pthread_mutex_unlock(&mutex_);
-	}
-
-	void platform_eventflag::clear(void) noexcept
-	{
-		pthread_mutex_lock(&mutex_);
-		flagged_ = false;
-		pthread_mutex_unlock(&mutex_);
 	}
 
 }

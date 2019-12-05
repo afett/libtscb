@@ -56,9 +56,20 @@ static bool timer_handler(std::chrono::steady_clock::time_point & now)
 	return false;
 }
 
+namespace {
+
+class mock_eventflag : public tscb::eventflag {
+public:
+	void set() noexcept override {}
+	void clear() noexcept override {}
+	void wait() noexcept override {}
+};
+
+}
+
 void test_timer_casts(void)
 {
-	tscb::platform_eventflag ev;
+	::mock_eventflag ev;
 	tscb::timerqueue_dispatcher timer(ev);
 
 	/* no casts, assignment/construction to/from same type */
