@@ -4,7 +4,7 @@ compiler:
   - clang
   - gcc
 
-dist: trusty
+dist: xenial
 sudo: false
 
 addons:
