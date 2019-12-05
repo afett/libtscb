@@ -200,14 +200,13 @@ namespace tscb {
 		*/
 		inline Node *extract_min(void)
 		{
-			Node *result=root, *newroot;
+			auto result = root;
 			if (result) {
 				root_degree--;
+				auto newroot = result->*child;
 				if (result==result->*next) {
-					newroot=result->*child;
 					root_degree=result->*degree;
 				} else {
-					newroot=result->*child;
 					if (newroot) {
 						newroot->*prev->*next=result->*next;
 						result->*next->*prev=newroot->*prev;
@@ -316,7 +315,7 @@ namespace tscb {
 
 		inline void assert_structure_recursive(Node *current, int _degree)
 		{
-			Node *tmp=current;
+			auto *tmp = current;
 
 			int count=0;
 			do {
@@ -352,17 +351,17 @@ namespace tscb {
 		inline void rebalance(void)
 		{
 			auto collision = std::array<Node*, 64>{};
-			Node *current, *tmp, *other, *minimum;
 
-			int count=root_degree;
-			current=root;
+			auto count = root_degree;
+			auto current = root;
 			if (!current) return;
-			minimum=root;
+			auto minimum = root;
 			while(count--) {
-				tmp=current->*next;
+				auto tmp = current->*next;
 
 				current->*parent = nullptr;
 
+				Node *other;
 				while((other=collision[current->*degree])) {
 					if (lt(*other, *current)) {
 						Node *xchg=current;
@@ -384,7 +383,7 @@ namespace tscb {
 
 		inline void cascade(Node *n)
 		{
-			Node *_parent=n->*parent;
+			auto _parent=n->*parent;
 			while (n->*parent != nullptr) {
 				__remove(n);
 				__push_root(n);
