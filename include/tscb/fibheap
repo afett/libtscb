@@ -351,7 +351,7 @@ namespace tscb {
 
 		inline void rebalance(void)
 		{
-			auto collision = std::array<Node*, 64>{};
+			auto collision = std::array<Node*, 64>{0};
 			Node *current, *tmp, *other, *minimum;
 
 			int count=root_degree;
