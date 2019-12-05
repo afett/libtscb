@@ -463,7 +463,7 @@ namespace tscb {
 	*/
 	class ioready_connection {
 	public:
-		inline ioready_connection(ioready_callback * callback = 0, bool add_ref = true) noexcept
+		inline ioready_connection(ioready_callback * callback = nullptr, bool add_ref = true) noexcept
 			: callback_(callback)
 		{
 			if (callback_ && add_ref) {

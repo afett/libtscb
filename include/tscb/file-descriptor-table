@@ -129,7 +129,7 @@ namespace tscb {
 				: capacity_(initial), entries_(new std::atomic<file_descriptor_chain *>[capacity_]), old_(nullptr)
 			{
 				for (size_t n = 0; n < capacity_; ++n) {
-					entries_[n].store(0, std::memory_order_relaxed);
+					entries_[n].store(nullptr, std::memory_order_relaxed);
 				}
 			}
 

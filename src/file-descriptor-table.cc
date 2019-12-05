@@ -68,7 +68,7 @@ namespace tscb {
 
 		for (;;) {
 			if (!tmp) {
-				if (entry->active_.load(std::memory_order_relaxed) == 0) {
+				if (entry->active_.load(std::memory_order_relaxed) == nullptr) {
 					entry->active_.store(cb, std::memory_order_relaxed);
 				}
 				break;
@@ -129,7 +129,7 @@ namespace tscb {
 		this could lead to a pending event being delivered for the new
 		descriptor. Guard against this by changing the cookie for the
 		callback chain. */
-		if (entry->active_.load(std::memory_order_relaxed) == 0) {
+		if (entry->active_.load(std::memory_order_relaxed) == nullptr) {
 			uint32_t old_cookie = cookie_.fetch_add(1, std::memory_order_relaxed);
 			uint32_t new_cookie = old_cookie + 1;
 			entry->cookie_.store(new_cookie, std::memory_order_relaxed);
@@ -150,7 +150,7 @@ namespace tscb {
 		volatile_table * tab = table_.load(std::memory_order_relaxed);
 		volatile_table * old = tab->old_;
 		/* deallocate old tables */
-		tab->old_ = 0;
+		tab->old_ = nullptr;
 		while (old) {
 			volatile_table * next = old->old_;
 			delete old;

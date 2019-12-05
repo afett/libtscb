@@ -29,7 +29,7 @@ void * thread_func1(void * arg)
 {
 	tscb::eventtrigger * trigger = (tscb::eventtrigger *)arg;
 	trigger->set();
-	return 0;
+	return nullptr;
 }
 
 void test_basic_operation(void)
@@ -43,14 +43,14 @@ void test_basic_operation(void)
 	assert(connection.get()->refcount_ == 2);
 
 	pthread_t tid;
-	pthread_create(&tid, 0, thread_func1, dynamic_cast<tscb::eventtrigger *>(&connection));
+	pthread_create(&tid, nullptr, thread_func1, dynamic_cast<tscb::eventtrigger *>(&connection));
 
 	while (called_count.load(std::memory_order_relaxed) == 0) {
 		event.wait();
 		event.clear();
 		async.dispatch();
 	}
-	pthread_join(tid, 0);
+	pthread_join(tid, nullptr);
 }
 
 void test_disconnect(void)
@@ -133,7 +133,7 @@ void test_dispatch_throw(void)
 	/* first must have been processed, other must remain pending;
 	eventflag must have been reasserted */
 	assert(called_count == 1);
-	assert(async.pending_ != 0);
+	assert(async.pending_ != nullptr);
 	assert(event.flagged_ != 0);
 
 	/* dispatch pending events, will throw on second */

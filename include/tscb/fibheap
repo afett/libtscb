@@ -109,13 +109,13 @@ namespace tscb {
 				((node->*parent)->*degree)--;
 				if ((node->*parent)->*child==node) {
 					(node->*parent)->*child=node->*next;
-					if (node->*next==node) (node->*parent)->*child=0;
+					if (node->*next==node) (node->*parent)->*child = nullptr;
 				}
 			} else {
 				root_degree--;
 				if (root==node) {
 					root=node->*next;
-					if (node->*next==node) root=0;
+					if (node->*next==node) root = nullptr;
 				}
 			}
 			/* parent=(node *)0;next=(node *)0;prev=(node *)0; */
@@ -149,13 +149,13 @@ namespace tscb {
 				subnode->*next=subnode;
 				root=subnode;
 			}
-			subnode->*parent=0;
+			subnode->*parent = nullptr;
 			root_degree++;
 		}
 	public:
 		inline fibheap(void)
 		{
-			root=0;
+			root = nullptr;
 			root_degree=0;
 		}
 
@@ -170,20 +170,20 @@ namespace tscb {
 		inline void insert(Node *n)
 		{
 			n->*degree=0;
-			n->*parent=0;
-			n->*next=0;
-			n->*prev=0;
-			n->*child=0;
+			n->*parent = nullptr;
+			n->*next = nullptr;
+			n->*prev = nullptr;
+			n->*child = nullptr;
 			if (root) {
 				n->*prev=root->*prev;
 				n->*next=root;
-				n->*parent=0;
+				n->*parent = nullptr;
 				(root->*prev)->*next=n;
 				root->*prev=n;
 				if (lt(*n, *root)) root=n;
 			} else {
 				root=n;
-				n->*parent=0;
+				n->*parent = nullptr;
 				n->*next=n;
 				n->*prev=n;
 			}
@@ -224,10 +224,10 @@ namespace tscb {
 
 				rebalance();
 
-				result->*parent=0;
-				result->*next=0;
-				result->*prev=0;
-				result->*child=0;
+				result->*parent = nullptr;
+				result->*next = nullptr;
+				result->*prev = nullptr;
+				result->*child = nullptr;
 			}
 
 			return result;
@@ -286,7 +286,7 @@ namespace tscb {
 		*/
 		inline void remove(Node *n)
 		{
-			if (n->*parent!=0) {
+			if (n->*parent != nullptr) {
 				Node *_parent=n->*parent;
 				__remove(n);
 				__push_root(n);
@@ -351,7 +351,7 @@ namespace tscb {
 
 		inline void rebalance(void)
 		{
-			auto collision = std::array<Node*, 64>{0};
+			auto collision = std::array<Node*, 64>{nullptr};
 			Node *current, *tmp, *other, *minimum;
 
 			int count=root_degree;
@@ -361,7 +361,7 @@ namespace tscb {
 			while(count--) {
 				tmp=current->*next;
 
-				current->*parent=0;
+				current->*parent = nullptr;
 
 				while((other=collision[current->*degree])) {
 					if (lt(*other, *current)) {
@@ -369,7 +369,7 @@ namespace tscb {
 						current=other;
 						other=xchg;
 					}
-					collision[current->*degree]=0;
+					collision[current->*degree] = nullptr;
 					__remove(other);
 					other->*parent=current;
 					__push(current, other);
@@ -385,7 +385,7 @@ namespace tscb {
 		inline void cascade(Node *n)
 		{
 			Node *_parent=n->*parent;
-			while(n->*parent!=0) {
+			while (n->*parent != nullptr) {
 				__remove(n);
 				__push_root(n);
 				n=_parent;

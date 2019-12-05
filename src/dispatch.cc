@@ -21,7 +21,7 @@ namespace tscb {
 		compared to the call to gettimeofday
 		*/
 		if (__builtin_expect(!tq->timers_pending(), true)) {
-			io->dispatch(0);
+			io->dispatch(nullptr);
 			return;
 		}
 
@@ -40,7 +40,7 @@ namespace tscb {
 		if (pending) {
 			std::chrono::steady_clock::duration timeout = t - now;
 			io->dispatch(&timeout);
-		} else io->dispatch(0);
+		} else io->dispatch(nullptr);
 	}
 
 	posix_reactor::posix_reactor(void)

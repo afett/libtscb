@@ -258,10 +258,10 @@ static void *run_dispatcher(void *arg)
 	ioready_dispatcher *d=(ioready_dispatcher *)arg;
 
 	while(!cancel_dispatching) {
-		d->dispatch(0);
+		d->dispatch(nullptr);
 	}
 
-	return 0;
+	return nullptr;
 }
 
 void test_dispatcher_threading(ioready_dispatcher * d)
@@ -273,7 +273,7 @@ void test_dispatcher_threading(ioready_dispatcher * d)
 
 		pthread_t thread;
 
-		pthread_create(&thread, 0, &run_dispatcher, d);
+		pthread_create(&thread, nullptr, &run_dispatcher, d);
 
 		usleep(10*1000);
 
@@ -296,7 +296,7 @@ void test_dispatcher_threading(ioready_dispatcher * d)
 
 		evflag.set();
 
-		pthread_join(thread, 0);
+		pthread_join(thread, nullptr);
 		link.disconnect();
 
 		close(pipefd[0]);
