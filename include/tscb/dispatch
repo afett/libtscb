@@ -9,7 +9,6 @@
 #ifndef TSCB_DISPATCH_H
 #define TSCB_DISPATCH_H
 
-#include <list>
 #include <mutex>
 
 #include <tscb/reactor>
