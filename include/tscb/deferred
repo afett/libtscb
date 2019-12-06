@@ -459,10 +459,9 @@ namespace tscb {
 
 		inline bool read_acquire(void) throw()
 		{
-			size_t expected;
 			bool success;
 			do {
-				expected = readers_.load(std::memory_order_relaxed);
+				auto expected = readers_.load(std::memory_order_relaxed);
 				if (__builtin_expect(expected == 0, 0)) {
 					return false;
 				}
@@ -654,10 +653,9 @@ namespace tscb {
 
 		inline bool read_acquire(void) throw()
 		{
-			size_t expected;
 			bool success;
 			do {
-				expected = readers_.load(std::memory_order_relaxed);
+				auto expected = readers_.load(std::memory_order_relaxed);
 				if (__builtin_expect(expected==0, 0)) {
 					return false;
 				}
